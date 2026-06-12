@@ -1,0 +1,27 @@
+{
+  "slug": "air-india",
+  "name": "Air India",
+  "iataCode": "AI",
+  "icaoCode": "AIC",
+  "logo": "/images/airlines/air-india.png",
+  "coverImage": "/images/airlines/air-india-cover.jpg",
+  "website": "https://www.airindia.com/",
+  "email": "customer.relations@airindia.in",
+  "phone": "+91 124 264 1407",
+  "foundedYear": 1932,
+  "alliance": "None",
+  "headquarters": {
+    "address": "Airlines House, 113 Gurudwara Rakab Ganj Road, New Delhi 110001, India",
+    "phone": "+91 124 264 1407",
+    "email": "customer.relations@airindia.in"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/airindia",
+    "twitter": "https://x.com/airindiain",
+    "instagram": "https://www.instagram.com/airindia/",
+    "youtube": "https://www.youtube.com/user/airindiavideo"
+  },
+  "metaTitle": "Air India Offices Worldwide | Find Office Near You",
+  "metaDescription": "Find all Air India office locations worldwide. Get address, phone number, working hours and services.",
+  "updatedAt": "2026-04-01"
+}

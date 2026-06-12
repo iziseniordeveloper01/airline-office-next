@@ -1,0 +1,27 @@
+{
+  "slug": "lufthansa",
+  "name": "Lufthansa",
+  "iataCode": "LH",
+  "icaoCode": "DLH",
+  "logo": "/images/airlines/lufthansa.png",
+  "coverImage": "/images/airlines/lufthansa-cover.jpg",
+  "website": "https://www.lufthansa.com/",
+  "email": "customer.feedback@lufthansa.com",
+  "phone": "+49 69 86 799 799",
+  "foundedYear": 1953,
+  "alliance": "Star Alliance",
+  "headquarters": {
+    "address": "Deutsche Lufthansa AG, Lufthansa Aviation Center, Airportring, 60549 Frankfurt am Main, Germany",
+    "phone": "+49 69 86 799 799",
+    "email": "customer.feedback@lufthansa.com"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/lufthansa",
+    "twitter": "https://x.com/lufthansa",
+    "instagram": "https://www.instagram.com/lufthansa/",
+    "youtube": "https://www.youtube.com/user/Lufthansa"
+  },
+  "metaTitle": "Lufthansa Offices Worldwide | Find Office Near You",
+  "metaDescription": "Find all Lufthansa office locations worldwide. Get address, phone number, working hours and services.",
+  "updatedAt": "2026-04-05"
+}

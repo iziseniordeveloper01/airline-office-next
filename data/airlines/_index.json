@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "qatar-airways",
+    "name": "Qatar Airways",
+    "iataCode": "QR",
+    "logo": "/images/airlines/qatar-airways.png",
+    "isFeatured": true,
+    "officeCount": 45
+  },
+  {
+    "slug": "emirates",
+    "name": "Emirates",
+    "iataCode": "EK",
+    "logo": "/images/airlines/emirates.png",
+    "isFeatured": true,
+    "officeCount": 38
+  },
+  {
+    "slug": "turkish-airlines",
+    "name": "Turkish Airlines",
+    "iataCode": "TK",
+    "logo": "/images/airlines/turkish-airlines.png",
+    "isFeatured": true,
+    "officeCount": 52
+  },
+  {
+    "slug": "air-india",
+    "name": "Air India",
+    "iataCode": "AI",
+    "logo": "/images/airlines/air-india.png",
+    "isFeatured": true,
+    "officeCount": 28
+  },
+  {
+    "slug": "british-airways",
+    "name": "British Airways",
+    "iataCode": "BA",
+    "logo": "/images/airlines/british-airways.png",
+    "isFeatured": true,
+    "officeCount": 34
+  },
+  {
+    "slug": "lufthansa",
+    "name": "Lufthansa",
+    "iataCode": "LH",
+    "logo": "/images/airlines/lufthansa.png",
+    "isFeatured": true,
+    "officeCount": 41
+  }
+]

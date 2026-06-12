@@ -1,0 +1,27 @@
+{
+  "slug": "qatar-airways",
+  "name": "Qatar Airways",
+  "iataCode": "QR",
+  "icaoCode": "QTR",
+  "logo": "/images/airlines/qatar-airways.png",
+  "coverImage": "/images/airlines/qatar-airways-cover.jpg",
+  "website": "https://www.qatarairways.com/",
+  "email": "tell-us@qatarairways.com.qa",
+  "phone": "+974 4144 5555",
+  "foundedYear": 1993,
+  "alliance": "oneworld",
+  "headquarters": {
+    "address": "Qatar Airways Tower, Doha, Qatar",
+    "phone": "+974 4144 5555",
+    "email": "tell-us@qatarairways.com.qa"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/qatarairways",
+    "twitter": "https://x.com/qatarairways",
+    "instagram": "https://www.instagram.com/qatarairways/",
+    "youtube": "https://www.youtube.com/user/qatarairways"
+  },
+  "metaTitle": "Qatar Airways Offices Worldwide | Find Office Near You",
+  "metaDescription": "Find all Qatar Airways office locations worldwide. Get address, phone number, working hours.",
+  "updatedAt": "2026-03-18"
+}

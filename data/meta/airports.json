@@ -1,0 +1,8 @@
+[
+  { "iataCode": "LHR", "name": "London Heathrow Airport", "city": "London", "country": "United Kingdom" },
+  { "iataCode": "DEL", "name": "Indira Gandhi International Airport", "city": "Delhi", "country": "India" },
+  { "iataCode": "BOM", "name": "Chhatrapati Shivaji International Airport", "city": "Mumbai", "country": "India" },
+  { "iataCode": "JFK", "name": "John F. Kennedy International Airport", "city": "New York", "country": "United States" },
+  { "iataCode": "DXB", "name": "Dubai International Airport", "city": "Dubai", "country": "UAE" },
+  { "iataCode": "DOH", "name": "Hamad International Airport", "city": "Doha", "country": "Qatar" }
+]

@@ -1,0 +1,99 @@
+{
+  "slug": "lufthansa",
+  "airlineSlug": "lufthansa",
+  "airlineName": "Lufthansa",
+  "fullTitle": "Lufthansa Sydney Office in Australia",
+  "city": "Sydney",
+  "country": "Australia",
+  "countryCode": "AU",
+  "region": "Asia Pacific",
+  "address": "143 Macquarie Street, Sydney NSW 2000, Australia",
+  "phone": "+61 1300 655 727",
+  "email": "customer.feedback@lufthansa.com",
+  "workingHours": "9:00 AM to 5:00 PM",
+  "workingDays": "Monday - Friday",
+  "website": "https://www.lufthansa.com/",
+  "onlineCheckin": "https://www.lufthansa.com/de/en/check-in-options",
+  "flightStatus": "https://www.lufthansa.com/de/en/flight-status",
+  "baggageInfo": "https://www.lufthansa.com/de/en/baggage-overview",
+  "isHeadquarters": false,
+  "heroImage": "https://www.airlinesofficelist.com/wp-content/uploads/2026/04/Montreal.jpg",
+  "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.5!2d151.2105!3d-33.8651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae3b3b3b3b3b%3A0x0!2s143%20Macquarie%20St%2C%20Sydney%20NSW%202000!5e0!3m2!1sen!2sau!4v1681173470994!5m2!1sen!2sau",
+  "mapLat": -33.8651,
+  "mapLng": 151.2105,
+  "content": {
+    "introP1": "maintains an office in Sydney to assist Australian passengers and travelers flying between Australia and Europe via Frankfurt. As one of the world's leading airlines, Lufthansa provides premium service to passengers embarking on long-haul journeys from Sydney to Germany and beyond.",
+    "introP2": "The Lufthansa Office in Sydney, Australia, offers support for flight reservations, Miles & More frequent flyer program queries, baggage policies, and premium cabin upgrade requests. The multilingual team is well-equipped to assist Australian travelers navigating complex international itineraries through Lufthansa's extensive European hub network.",
+    "overviewDesc": "The Lufthansa Sydney Office is conveniently situated at 143 Macquarie Street in Sydney's Central Business District, one of the most accessible locations in the city. The office caters to travelers across New South Wales and serves as the primary point of contact for Lufthansa passengers in Australia, offering personalized service from a team with deep knowledge of European and global travel routes.",
+    "servicesDesc": "The Lufthansa Office in Sydney provides a wide range of passenger services including flight bookings, cancellations, itinerary changes, and baggage queries. Passengers can also seek assistance with Miles & More loyalty program enrollment and redemption, Business and First Class upgrade requests, group travel coordination, and special assistance services for elderly or differently-abled travelers.",
+    "airportDesc": "Lufthansa operates its Sydney flights from Sydney Kingsford Smith Airport (SYD), Australia's busiest international gateway. The T1 International Terminal handles all Lufthansa departures and arrivals. Passengers flying in Business Class or First Class have access to the Lufthansa Senator Lounge, offering premium pre-flight facilities.",
+    "fleetDesc": "Lufthansa operates a modern and environmentally conscious fleet of long-haul aircraft on its Sydney routes, providing passengers with industry-leading comfort over the extended flight distances between Australia and Europe. The airline continuously invests in next-generation aircraft to reduce emissions and deliver an improved passenger experience on ultra-long-haul services.",
+    "mapDesc": "Use the interactive map below to find the Lufthansa Sydney Office at 143 Macquarie Street in the Sydney CBD. The office is within walking distance of Circular Quay train and ferry stations, making it easy to reach from across greater Sydney.",
+    "conclusionDesc": "The Lufthansa Sydney Office is the go-to destination for Australian travelers seeking expert assistance with their Lufthansa journeys to Europe and beyond. With direct flights from Sydney to Frankfurt and seamless connections to hundreds of European destinations, Lufthansa continues to be a preferred choice for Australians traveling abroad. The Sydney office team brings the same standards of German precision and hospitality that define the Lufthansa brand worldwide, ensuring every passenger receives attentive and professional service."
+  },
+  "airport": {
+    "name": "Sydney Kingsford Smith Airport",
+    "code": "SYD",
+    "terminal": "T1 International Terminal",
+    "address": "Airport Drive, Mascot NSW 2020, Australia",
+    "phone": "+61 2 9667 9111"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/lufthansa",
+    "twitter": "https://x.com/lufthansa",
+    "instagram": "https://www.instagram.com/lufthansa/",
+    "youtube": "https://www.youtube.com/user/Lufthansa"
+  },
+  "services": [
+    "Flight Ticket Booking",
+    "Flight Ticket Cancellation",
+    "Miles & More Support",
+    "Business Class Upgrades",
+    "First Class Services",
+    "Baggage Allowance",
+    "Group Travel Coordination",
+    "Airport Lounge Access",
+    "Missing Luggage",
+    "Online Check-in",
+    "Special Meal Requests",
+    "Wheelchair Assistance",
+    "Infant & Child Travel",
+    "Transit Visa Guidance"
+  ],
+  "fleet": [
+    { "aircraft": "Boeing 747-8", "inService": 19 },
+    { "aircraft": "Airbus A380-800", "inService": 14 },
+    { "aircraft": "Boeing 787-9", "inService": 32 },
+    { "aircraft": "Airbus A350-900", "inService": 22 },
+    { "aircraft": "Airbus A320neo", "inService": 58 }
+  ],
+  "faqs": [
+    {
+      "question": "Where is the Lufthansa office in Sydney?",
+      "answer": "The Lufthansa Sydney office is located at 143 Macquarie Street, Sydney NSW 2000, Australia."
+    },
+    {
+      "question": "What are the working hours of the Lufthansa Sydney office?",
+      "answer": "The Lufthansa Sydney office operates Monday to Friday, 9:00 AM to 5:00 PM."
+    },
+    {
+      "question": "Which terminal does Lufthansa use at Sydney Airport?",
+      "answer": "Lufthansa operates from the T1 International Terminal at Sydney Kingsford Smith Airport (SYD)."
+    },
+    {
+      "question": "Can I redeem Miles & More points at the Sydney office?",
+      "answer": "Yes, the Sydney office team can assist with Miles & More loyalty program queries, award ticket redemptions, and status tier information."
+    },
+    {
+      "question": "Does Lufthansa fly directly from Sydney to Germany?",
+      "answer": "Yes, Lufthansa operates direct long-haul flights from Sydney (SYD) to Frankfurt (FRA), with onward connections to hundreds of European destinations."
+    }
+  ],
+  "metaTitle": "Lufthansa Sydney Office in Australia | Address, Phone & Services",
+  "metaDescription": "Find Lufthansa Sydney office at 143 Macquarie Street CBD. Get contact number, working hours, airport terminal, services and map.",
+  "ogImage": "https://www.airlinesofficelist.com/wp-content/uploads/2026/04/Montreal.jpg",
+  "isPublished": true,
+  "isFeatured": false,
+  "publishedAt": "2026-03-15",
+  "updatedAt": "2026-04-05"
+}

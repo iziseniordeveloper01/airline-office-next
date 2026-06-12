@@ -1,0 +1,90 @@
+{
+  "slug": "london-office",
+  "airlineSlug": "qatar-airways",
+  "airlineName": "Qatar Airways",
+  "fullTitle": "Qatar Airways London Office in England",
+  "city": "London",
+  "country": "United Kingdom",
+  "countryCode": "GB",
+  "region": "Europe",
+  "address": "10-11 Conduit St, London W1S 2QR, United Kingdom",
+  "phone": "+44 330 024 0104",
+  "ctaPhone": "+1 xxx xxx xxxx",
+  "email": "tell-us@qatarairways.com.qa",
+  "workingHours": "9:30 AM to 5:30 PM",
+  "workingDays": "Monday - Friday",
+  "website": "https://www.qatarairways.com/",
+  "onlineCheckin": "https://www.qatarairways.com/en/services-checking-in.html",
+  "flightStatus": "https://fs.qatarairways.com/flightstatus/search",
+  "baggageInfo": "https://www.qatarairways.com/en/baggage/allowance.html",
+  "isHeadquarters": false,
+  "heroImage": "https://www.airlinesofficelist.com/wp-content/uploads/2026/04/Montreal.jpg",
+  "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.03!2d-0.1441!3d51.5126!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604b900d26973%3A0x4291f3172409ea92!2s10-11%20Conduit%20St%2C%20London%20W1S%202QR!5e0!3m2!1sen!2suk!4v1681173470994!5m2!1sen!2suk",
+  "mapLat": 51.5126,
+  "mapLng": -0.1441,
+  "content": {
+    "introP1": "has a well-established presence in London to assist passengers with travel-related information and booking queries. The office serves as a primary point of contact for travelers flying to and from London, United Kingdom.",
+    "introP2": "The Qatar Airways Office in London, United Kingdom, provides detailed information on reservations, airline regulations, airport rules, baggage drop-off locations, luggage weight limits, and other important travel details. Passengers who prefer in-person assistance are welcome to visit the office before their trip.",
+    "overviewDesc": "The Qatar Airways London Office in England is conveniently located at 10-11 Conduit St, London W1S 2QR. The office assists passengers in managing various aspects of their travel with ease. Whether it is booking a ticket, checking flight schedules, or understanding travel rules, the office provides helpful information for both new and frequent travelers.",
+    "servicesDesc": "The Qatar Airways Office in London helps with a wide range of common travel needs, including reservations, baggage rules, meal requests, pet travel, ticket changes, and medical requirements. Passengers can also contact the Qatar Airways London office directly for quick and reliable assistance. Some key services offered are listed below.",
+    "airportDesc": "Passengers flying with Qatar Airways from London generally depart from London Heathrow Airport (LHR). Knowing the terminal and airport details in advance can help prevent delays and significantly streamline your travel journey.",
+    "fleetDesc": "Qatar Airways operates a modern and diverse fleet of aircraft carefully selected based on route distance, passenger demand, and operational requirements. Every aircraft undergoes rigorous regular inspections and scheduled maintenance to ensure the highest standards of safety and reliability.",
+    "mapDesc": "Use the interactive map below to find the Qatar Airways London Office in England. Checking your route in advance helps you accurately estimate travel time and choose the most convenient way to reach the office.",
+    "conclusionDesc": "The Qatar Airways London Office in England serves as a dependable and trusted point of contact for travelers seeking assistance with reservations, flight details, and other travel-related inquiries. The office efficiently handles various passenger needs including clarifying baggage rules, modifying tickets, visa guidance, and providing general travel support. With accessible contact information and a knowledgeable team, the office ensures a smooth and hassle-free experience for all passengers flying with Qatar Airways."
+  },
+  "airport": {
+    "name": "London Heathrow Airport",
+    "code": "LHR",
+    "terminal": "Terminal 4",
+    "address": "Hounslow TW6, United Kingdom",
+    "phone": "+44 844 335 1801"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/qatarairways",
+    "twitter": "https://x.com/qatarairways",
+    "instagram": "https://www.instagram.com/qatarairways/",
+    "youtube": "https://www.youtube.com/user/qatarairways"
+  },
+  "services": [
+    "Flight Ticket Booking",
+    "Flight Ticket Cancellation",
+    "Ok to Board",
+    "Airport Lounges",
+    "Visa Services",
+    "Baggage Allowance",
+    "Airport Transfers",
+    "Meet and Greet",
+    "Duty-Free Allowance",
+    "Missing Luggage",
+    "Online Check-in",
+    "In-Flight Entertainment"
+  ],
+  "fleet": [
+    { "aircraft": "Airbus A320-200", "inService": 27 },
+    { "aircraft": "Airbus A350-900", "inService": 34 },
+    { "aircraft": "Airbus A380-800", "inService": 8 },
+    { "aircraft": "Boeing 777-300ER", "inService": 57 },
+    { "aircraft": "Boeing 787-8", "inService": 32 }
+  ],
+  "faqs": [
+    {
+      "question": "Where is the Qatar Airways office in London?",
+      "answer": "The Qatar Airways London office is at 10-11 Conduit St, London W1S 2QR, United Kingdom."
+    },
+    {
+      "question": "What are the working hours of Qatar Airways London office?",
+      "answer": "Monday to Friday, 9:30 AM to 5:30 PM."
+    },
+    {
+      "question": "Can I change my booking at the London office?",
+      "answer": "Yes, passengers can contact the office for reservation changes and ticket modifications."
+    }
+  ],
+  "metaTitle": "Qatar Airways London Office in England +1-xxx-xxx-xxxx",
+  "metaDescription": "Find Qatar Airways London office address at 10-11 Conduit St. Get phone, working hours, services and map.",
+  "ogImage": "https://www.airlinesofficelist.com/wp-content/uploads/2026/04/Montreal.jpg",
+  "isPublished": true,
+  "isFeatured": true,
+  "publishedAt": "2026-03-01",
+  "updatedAt": "2026-03-30"
+}

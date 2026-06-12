@@ -1,0 +1,27 @@
+{
+  "slug": "emirates",
+  "name": "Emirates",
+  "iataCode": "EK",
+  "icaoCode": "UAE",
+  "logo": "/images/airlines/emirates.png",
+  "coverImage": "/images/airlines/emirates-cover.jpg",
+  "website": "https://www.emirates.com/",
+  "email": "customer.affairs@emirates.com",
+  "phone": "+971 600 555 555",
+  "foundedYear": 1985,
+  "alliance": "None",
+  "headquarters": {
+    "address": "Emirates Group Headquarters, PO Box 686, Dubai, United Arab Emirates",
+    "phone": "+971 600 555 555",
+    "email": "customer.affairs@emirates.com"
+  },
+  "socialMedia": {
+    "facebook": "https://www.facebook.com/emirates",
+    "twitter": "https://x.com/emirates",
+    "instagram": "https://www.instagram.com/emirates/",
+    "youtube": "https://www.youtube.com/user/emirates"
+  },
+  "metaTitle": "Emirates Offices Worldwide | Find Office Near You",
+  "metaDescription": "Find all Emirates airline office locations worldwide. Get address, phone number, working hours and services.",
+  "updatedAt": "2026-03-30"
+}

@@ -1,0 +1,9 @@
+[
+  { "slug": "india", "name": "India", "isoCode": "IN", "region": "Asia" },
+  { "slug": "united-kingdom", "name": "United Kingdom", "isoCode": "GB", "region": "Europe" },
+  { "slug": "united-states", "name": "United States", "isoCode": "US", "region": "North America" },
+  { "slug": "saudi-arabia", "name": "Saudi Arabia", "isoCode": "SA", "region": "Middle East" },
+  { "slug": "germany", "name": "Germany", "isoCode": "DE", "region": "Europe" },
+  { "slug": "australia", "name": "Australia", "isoCode": "AU", "region": "Oceania" },
+  { "slug": "uae", "name": "United Arab Emirates", "isoCode": "AE", "region": "Middle East" }
+]
