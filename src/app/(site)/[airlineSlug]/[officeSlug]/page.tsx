@@ -18,7 +18,7 @@ import {
   PlaneTakeoff,
   Ticket,
 } from 'lucide-react'
-import { getOffice, getOfficesByAirline, getAllOfficePaths } from '@/lib/data/getOffice'
+import { getOffice, getOfficesByAirline } from '@/lib/data/getOffice'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -28,19 +28,7 @@ interface Props {
 
 // ─── Static Generation ───────────────────────────────────────────────────────
 
-export async function generateStaticParams() {
-  const paths = await getAllOfficePaths()
-  return paths.slice(0, 500).map((p) => ({
-    airlineSlug: p.airlineSlug,
-    officeSlug: p.slug,
-  }))
-}
-
-export const revalidate = 86400
-// A scheduled office that's already due is excluded from generateStaticParams (it
-// wasn't visible yet at the last build/regenerate), so it must render on-demand the
-// first time its URL is requested — dynamicParams must stay true for that to work.
-export const dynamicParams = true
+export const dynamic = 'force-dynamic'
 
 // ─── Metadata ────────────────────────────────────────────────────────────────
 

@@ -5,23 +5,14 @@ import Image from 'next/image'
 import {
   Building2, Calendar, Globe2, Layers, Mail, MapPin, Phone,
 } from 'lucide-react'
-import { getAirline, getAllAirlines } from '@/lib/data/getAirline'
+import { getAirline } from '@/lib/data/getAirline'
 import { getOfficesByAirline } from '@/lib/data/getOffice'
 
 interface Props {
   params: Promise<{ airlineSlug: string }>
 }
 
-export async function generateStaticParams() {
-  const airlines = await getAllAirlines()
-  return airlines.map((a) => ({ airlineSlug: a.slug }))
-}
-
-export const revalidate = 86400
-// A scheduled airline that's already due is excluded from generateStaticParams (it
-// wasn't visible yet at the last build/regenerate), so it must render on-demand the
-// first time its URL is requested — dynamicParams must stay true for that to work.
-export const dynamicParams = true
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { airlineSlug } = await params
