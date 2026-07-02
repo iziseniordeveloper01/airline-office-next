@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getBlogPost, getAllBlogSlugs, getRelatedPosts } from '@/lib/data/getBlog'
+import { getBlogPost, getRelatedPosts } from '@/lib/data/getBlog'
 import { getSidebarData } from '@/lib/data/getSidebar'
 import BlogSidebar from '@/components/blog/BlogSidebar'
 import BlogFAQ from '@/components/blog/BlogFAQ'
@@ -12,17 +12,7 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-// Build time pe saare blog slugs se static pages banao
-export async function generateStaticParams() {
-  const slugs = await getAllBlogSlugs()
-  return slugs.map((s) => ({ slug: s.slug }))
-}
-
-export const revalidate = 86400 // 24 hours
-// A scheduled post that's already due is excluded from generateStaticParams (it
-// wasn't visible yet at the last build/regenerate), so it must render on-demand the
-// first time its URL is requested — dynamicParams must stay true for that to work.
-export const dynamicParams = true
+export const dynamic = 'force-dynamic'
 
 // Dynamic SEO metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
