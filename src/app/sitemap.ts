@@ -1,13 +1,15 @@
 import type { MetadataRoute } from 'next'
 import { getAllOfficePaths } from '@/lib/data/getOffice'
 import { getAllAirlines } from '@/lib/data/getAirline'
+import { getAllBlogSlugs } from '@/lib/data/getBlog' 
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yoursite.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [airlines, officePaths] = await Promise.all([
+  const [airlines, officePaths, blogSlugs] = await Promise.all([
     getAllAirlines(),
     getAllOfficePaths(),
+    getAllBlogSlugs(),
   ])
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -30,5 +32,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...airlinePages, ...officePages]
+  // ── Blog pages ──
+  const blogPages: MetadataRoute.Sitemap = blogSlugs.map((b) => ({
+    url: `${SITE_URL}/blog/${b.slug}/`,
+    lastModified: new Date(b.updatedAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  return [...staticPages, ...airlinePages, ...officePages, ...blogPages]
 }

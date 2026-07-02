@@ -1,3 +1,7 @@
+// ─── Auth ──────────────────────────────────────────────────────────────────
+
+export type Role = 'editor' | 'admin' | 'super_admin'
+
 // ─── Airline ───────────────────────────────────────────────────────────────
 
 export interface AirlineIndex {
@@ -7,6 +11,9 @@ export interface AirlineIndex {
   logo: string
   isFeatured: boolean
   officeCount: number
+  hqAddress: string
+  hqPhone: string
+  hqEmail: string
 }
 
 export interface Airline {
@@ -16,6 +23,7 @@ export interface Airline {
   icaoCode: string
   logo: string
   coverImage?: string
+  description: string
   website: string
   email: string
   phone: string
@@ -34,31 +42,22 @@ export interface Airline {
   }
   metaTitle: string
   metaDescription: string
+  ogImage?: string
+  canonicalUrl?: string
+  noindex: boolean
   updatedAt: string
 }
 
 // ─── Office ────────────────────────────────────────────────────────────────
-
-export interface FleetItem {
-  aircraft: string
-  inService: number
-}
 
 export interface FAQ {
   question: string
   answer: string
 }
 
-export interface AirportInfo {
-  name: string
-  code: string
-  terminal: string
-  address: string
-  phone?: string
-}
-
 export interface Office {
-  heroImage:string
+  id: number
+  heroImage: string | null
   slug: string
   airlineSlug: string
   airlineName: string
@@ -81,27 +80,16 @@ export interface Office {
   mapEmbedUrl?: string
   mapLat?: number
   mapLng?: number
-  airport?: AirportInfo
-  services: string[]
-  fleet: FleetItem[]
   faqs: FAQ[]
   metaTitle: string
   metaDescription: string
-  ogImage?: string
-  isPublished: boolean
+  ogImage?: string | null
+  canonicalUrl?: string
+  noindex: boolean
   isFeatured?: boolean
   publishedAt: string
   updatedAt: string
-  content?: {                 // ← new block
-    introP1?: string
-    introP2?: string
-    overviewDesc?: string
-    servicesDesc?: string
-    airportDesc?: string
-    fleetDesc?: string
-    mapDesc?: string
-    conclusionDesc?: string
-  }
+  content: string             // Tiptap HTML — intro/overview/services/airport/fleet/map/conclusion all typed freely
   socialMedia: {
     facebook?: string
     twitter?: string
@@ -118,8 +106,16 @@ export interface BlogPostIndex {
   title: string
   excerpt: string
   featuredImage: string
+  category: string
+  author: string
   publishedAt: string
+  updatedAt: string
   readingTime: string
+}
+
+export interface BlogFAQ {
+  question: string
+  answer: string
 }
 
 export interface BlogPost extends BlogPostIndex {
@@ -127,7 +123,24 @@ export interface BlogPost extends BlogPostIndex {
   metaTitle: string
   metaDescription: string
   ogImage: string
-  author?: string
+  canonicalUrl?: string
+  noindex: boolean
+  faqs: BlogFAQ[]
+  relatedPosts: string[]
+  // author yahan define mat karo — BlogPostIndex se already inherit ho raha hai (author: string)
+}
+
+// ─── Sidebar ───────────────────────────────────────────────────────────────
+
+export interface SidebarPopularPage {
+  title: string
+  url: string
+  city: string
+}
+
+export interface SidebarData {
+  popularPages: SidebarPopularPage[]
+  topAirlines: { name: string; slug: string }[]
 }
 
 // ─── Meta ──────────────────────────────────────────────────────────────────
@@ -144,4 +157,4 @@ export interface AirportMeta {
   name: string
   city: string
   country: string
-}
+} 

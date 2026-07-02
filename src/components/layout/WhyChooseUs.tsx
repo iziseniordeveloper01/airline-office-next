@@ -32,10 +32,10 @@ export default function WhyChooseUs() {
     <section className="bg-gray-50 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <h2 className="text-base font-semibold text-indigo-600">Why Choose Us</h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <p className="text-base font-semibold text-indigo-600">Why Choose Us</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Your Trusted Source for Airline Office Information
-          </p>
+          </h2>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">

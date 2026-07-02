@@ -1,0 +1,1 @@
+ALTER TABLE `blog_posts` MODIFY COLUMN `related_posts` text;

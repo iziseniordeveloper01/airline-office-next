@@ -1,0 +1,25 @@
+{
+  "popularPages": [
+    {
+      "title": "Qatar Airways London Office in England",
+      "url": "/qatar-airways/london-office/",
+      "city": "London, UK"
+    },
+    {
+      "title": "Turkish Airlines Houston Office in United States",
+      "url": "/turkish-airlines/houston-office/",
+      "city": "Houston, US"
+    },
+    {
+      "title": "Emirates Dubai Office in UAE",
+      "url": "/emirates/dubai-office/",
+      "city": "Dubai, UAE"
+    }
+  ],
+  "topAirlines": [
+    { "name": "Qatar Airways", "slug": "qatar-airways" },
+    { "name": "Turkish Airlines", "slug": "turkish-airlines" },
+    { "name": "Emirates", "slug": "emirates" },
+    { "name": "Air India", "slug": "air-india" }
+  ]
+}
