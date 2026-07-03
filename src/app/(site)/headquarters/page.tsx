@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 86400
+// Rendered at runtime, not at build: Railway's build phase can't reach the
+// private mysql.railway.internal host, so any build-time DB read fails. This
+// reads the airlines list per request instead of prerendering at build.
+export const dynamic = 'force-dynamic'
 
 export default async function HeadquartersPage() {
   const airlines = await getAllAirlines()

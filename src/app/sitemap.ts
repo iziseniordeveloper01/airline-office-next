@@ -5,6 +5,11 @@ import { getAllBlogSlugs } from '@/lib/data/getBlog'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yoursite.com'
 
+// Generated at runtime, not at build: it reads airlines/offices/blogs from
+// MySQL, and Railway's build phase can't reach the private
+// mysql.railway.internal host, so a build-time generation fails.
+export const dynamic = 'force-dynamic'
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [airlines, officePaths, blogSlugs] = await Promise.all([
     getAllAirlines(),

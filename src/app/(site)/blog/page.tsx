@@ -14,7 +14,10 @@ export const metadata: Metadata = {
   },
 }
 
-export const revalidate = 3600 // 1 hour
+// Rendered at runtime, not at build: Railway's build phase can't reach the
+// private mysql.railway.internal host, so any build-time DB read fails. This
+// reads posts per request instead of prerendering at build.
+export const dynamic = 'force-dynamic'
 
 export default async function BlogPage() {
   const [posts, sidebarData] = await Promise.all([

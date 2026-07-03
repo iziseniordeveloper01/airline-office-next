@@ -48,7 +48,19 @@ export const SETTINGS_DEFAULTS: SiteSettings = {
 export const SETTINGS_FIELDS = Object.keys(SETTINGS_DEFAULTS) as (keyof SiteSettings)[]
 
 async function readSettings(): Promise<SiteSettings> {
-  const rows = await db.select().from(settingsTable)
+  let rows: { key: string; value: string | null }[]
+  try {
+    rows = await db.select().from(settingsTable)
+  } catch (err) {
+    // The DB is unreachable during `next build` on Railway — the private
+    // `*.railway.internal` host only resolves at runtime, so any page whose
+    // metadata reads settings (e.g. the prerendered /_not-found) would crash the
+    // build. Fall back to defaults instead: the values are baked into static/ISR
+    // pages and refreshed on the first request once the DB is reachable. This
+    // also keeps the site serving (with defaults) through a transient DB outage.
+    console.warn('[getSettings] DB read failed, using defaults:', (err as Error).message)
+    return { ...SETTINGS_DEFAULTS }
+  }
   const stored = new Map(rows.map((r) => [r.key, r.value]))
   const result = { ...SETTINGS_DEFAULTS }
   for (const field of SETTINGS_FIELDS) {
