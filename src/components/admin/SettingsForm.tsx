@@ -136,8 +136,12 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
           ))}
         </TabsList>
 
+        {/* forceMount: one <form> spans all sections, and settingsSchema
+            defaults missing keys to '' — so if Radix unmounted inactive tabs,
+            saving from one tab would wipe every other section's settings.
+            Keeping all inputs mounted makes new FormData(form) complete. */}
         {SECTIONS.map((section) => (
-          <TabsContent key={section.id} value={section.id}>
+          <TabsContent forceMount key={section.id} value={section.id}>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

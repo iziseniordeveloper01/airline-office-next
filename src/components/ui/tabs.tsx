@@ -81,7 +81,15 @@ function TabsContent({
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
+      // data-[state=inactive]:hidden is a no-op for normal tabs (Radix already
+      // sets the hidden attribute), but it's what hides inactive panels when a
+      // caller passes forceMount — Radix skips `hidden` entirely in that case.
+      // Forms with inputs spread across tabs need forceMount so new FormData(form)
+      // still sees every field (see OfficeForm/SettingsForm).
+      className={cn(
+        "flex-1 text-sm outline-none data-[state=inactive]:hidden",
+        className
+      )}
       {...props}
     />
   )

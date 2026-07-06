@@ -172,12 +172,18 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
         <FieldError errors={[errors.scheduledAt]} />
       </div>
 
+      {/* Every TabsContent is forceMount'ed: onValid builds the payload with
+          new FormData(form), and Radix unmounts inactive panels by default —
+          which silently dropped all off-tab fields (slug, airlineId, …) and
+          crashed saveOffice server-side whenever Save was clicked from any tab
+          but Basic. forceMount keeps every input in the DOM (inactive panels
+          are CSS-hidden via tabs.tsx) so the FormData is always complete. */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           {tabs.map((tab) => <TabsTrigger key={tab.id} value={tab.id}>{tab.label}</TabsTrigger>)}
         </TabsList>
 
-        <TabsContent value="basic" className="grid grid-cols-2 gap-5">
+        <TabsContent forceMount value="basic" className="grid grid-cols-2 gap-5">
           <Field className="col-span-2">
             <FieldLabel>Airline *</FieldLabel>
             <Controller
@@ -254,7 +260,7 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
           </div>
         </TabsContent>
 
-        <TabsContent value="contact" className="grid grid-cols-2 gap-5">
+        <TabsContent forceMount value="contact" className="grid grid-cols-2 gap-5">
           <Field className="col-span-2">
             <FieldLabel htmlFor="address">Address</FieldLabel>
             <Textarea id="address" name="address" defaultValue={initialData?.address ?? ''} rows={2} placeholder="10-11 Conduit St, London W1S 2QR" />
@@ -276,7 +282,7 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
           <Field><FieldLabel htmlFor="baggageInfo">Baggage Info URL</FieldLabel><Input id="baggageInfo" type="url" name="baggageInfo" defaultValue={initialData?.baggageInfo ?? ''} placeholder="https://..." /></Field>
         </TabsContent>
 
-        <TabsContent value="content">
+        <TabsContent forceMount value="content">
           <p className="mb-3 text-sm text-muted-foreground">
             Type or paste the full page body here — intro, overview, services list, airport details, fleet table, map description, conclusion. Use headings (H2/H3) and tables freely.
           </p>
@@ -292,7 +298,7 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
           />
         </TabsContent>
 
-        <TabsContent value="social" className="grid grid-cols-2 gap-5">
+        <TabsContent forceMount value="social" className="grid grid-cols-2 gap-5">
           {(['facebook', 'twitter', 'instagram', 'youtube', 'linkedin'] as const).map((platform) => (
             <Field key={platform}>
               <FieldLabel htmlFor={platform}>{platform.charAt(0).toUpperCase() + platform.slice(1)}</FieldLabel>
@@ -301,7 +307,7 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
           ))}
         </TabsContent>
 
-        <TabsContent value="faq">
+        <TabsContent forceMount value="faq">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{faqs.filter((f) => f.question).length} FAQs</p>
             <Button type="button" variant="ghost" size="sm" onClick={addFaq}><Plus className="h-4 w-4" /> Add FAQ</Button>
@@ -324,7 +330,7 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
           </div>
         </TabsContent>
 
-        <TabsContent value="seo" className="space-y-5">
+        <TabsContent forceMount value="seo" className="space-y-5">
           <Field>
             <FieldLabel htmlFor="metaTitle">Meta Title</FieldLabel>
             <Input id="metaTitle" placeholder="Qatar Airways London Office +1-877-294-7147" {...register('metaTitle')} />
