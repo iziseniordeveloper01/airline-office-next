@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { blogPosts, blogFaqs } from '@/lib/schema'
 import { notTrashed, isCurrentlyLive } from '@/lib/visibility'
+import { getBlogCategories, getPostTagNames } from '@/lib/data/getTaxonomy'
 import BlogPostForm from '@/components/admin/BlogPostForm'
 
 interface Props {
@@ -17,9 +18,19 @@ export default async function EditBlogPostPage({ params }: Props) {
   })
   if (!post) notFound()
 
-  const faqs = await db.select().from(blogFaqs)
-    .where(eq(blogFaqs.postId, post.id))
-    .orderBy(asc(blogFaqs.sortOrder))
+  const [faqs, categories, initialTags] = await Promise.all([
+    db.select().from(blogFaqs).where(eq(blogFaqs.postId, post.id)).orderBy(asc(blogFaqs.sortOrder)),
+    getBlogCategories(),
+    getPostTagNames(post.id),
+  ])
 
-  return <BlogPostForm mode="edit" initialData={{ ...post, faqs }} isLive={isCurrentlyLive(post)} />
+  return (
+    <BlogPostForm
+      mode="edit"
+      initialData={{ ...post, faqs }}
+      categories={categories}
+      initialTags={initialTags}
+      isLive={isCurrentlyLive(post)}
+    />
+  )
 }

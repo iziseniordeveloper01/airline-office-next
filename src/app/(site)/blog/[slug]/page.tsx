@@ -151,10 +151,21 @@ export default async function BlogPostPage({ params }: Props) {
                   <span>{post.readingTime} read</span>
                 </div>
 
-                {/* Category */}
-                <span className="ml-auto bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
+                {/* Category — links to its archive when we know the slug */}
+                {post.categorySlug ? (
+                  <Link
+                    href={`/blog/category/${post.categorySlug}/`}
+                    className="ml-auto bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors"
+                  >
+                    {post.category}
+                  </Link>
+                ) : (
+                  post.category && (
+                    <span className="ml-auto bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1 rounded-full">
+                      {post.category}
+                    </span>
+                  )
+                )}
               </div>
 
               {/* ── Article Body ── */}
@@ -162,6 +173,22 @@ export default async function BlogPostPage({ params }: Props) {
                 className="prose-content"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
+
+              {/* ── Tags ── */}
+              {post.tags.length > 0 && (
+                <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-6">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Tags:</span>
+                  {post.tags.map((tag) => (
+                    <Link
+                      key={tag.slug}
+                      href={`/blog/tag/${tag.slug}/`}
+                      className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                    >
+                      #{tag.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
 
               {/* ── FAQ Section ── */}
               <BlogFAQ faqs={post.faqs} />

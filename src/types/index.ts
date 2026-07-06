@@ -127,6 +127,8 @@ export interface BlogPost extends BlogPostIndex {
   noindex: boolean
   faqs: BlogFAQ[]
   relatedPosts: string[]
+  tags: { name: string; slug: string }[]
+  categorySlug: string
   // author yahan define mat karo — BlogPostIndex se already inherit ho raha hai (author: string)
 }
 

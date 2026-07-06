@@ -2,12 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { eq, ne, and } from 'drizzle-orm'
+import { eq, ne, and, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { blogPosts, blogFaqs } from '@/lib/schema'
+import { blogPosts, blogFaqs, blogCategories, blogTags, blogPostTags } from '@/lib/schema'
 import { requireRole } from '@/lib/auth/requireRole'
 import { cleanHtml } from '@/lib/sanitize'
-import { ensureUniqueSlug, readingTime } from '@/lib/slug'
+import { ensureUniqueSlug, readingTime, sanitizeSlug } from '@/lib/slug'
 import { deleteReplacedImage } from '@/lib/images'
 import { isCurrentlyLive } from '@/lib/visibility'
 import { resolveStatusFields } from '@/lib/validation/content'
@@ -51,11 +51,19 @@ export async function saveBlogPost(formData: FormData) {
     existing?.publishedAt ?? null
   )
 
+  // Category comes as an id; the denormalized name is looked up server-side so
+  // a tampered form can't desync name from id.
+  const categoryId = raw.categoryId ? parseInt(raw.categoryId as string) : null
+  const [category] = categoryId
+    ? await db.select({ name: blogCategories.name }).from(blogCategories).where(eq(blogCategories.id, categoryId))
+    : []
+
   const data = {
     slug,
     title:           raw.title as string,
     excerpt:         (raw.excerpt as string) || null,
-    category:        (raw.category as string) || null,
+    category:        category?.name ?? null,
+    categoryId:      category ? categoryId : null,
     content,
     heroImageId:     (raw.heroImageId as string) || null,
     ogImageId:       (raw.ogImageId as string) || null,
@@ -97,6 +105,28 @@ export async function saveBlogPost(formData: FormData) {
       await db.insert(blogFaqs).values(
         faqs.map((faq, i) => ({ postId: resolvedPostId, question: faq.question, answer: faq.answer, sortOrder: i }))
       )
+    }
+  }
+
+  // Tags — sent as a JSON array of names; unknown tags are auto-created
+  // (WP behaviour), then the junction rows are replaced wholesale.
+  const tagsRaw = raw.tags as string | undefined
+  if (tagsRaw !== undefined) {
+    const names = Array.from(new Set(
+      (JSON.parse(tagsRaw) as string[]).map((t) => t.trim()).filter(Boolean)
+    )).slice(0, 20)
+
+    await db.delete(blogPostTags).where(eq(blogPostTags.postId, resolvedPostId))
+    if (names.length > 0) {
+      for (const name of names) {
+        const tagSlug = sanitizeSlug(name) || 'untitled'
+        await db.insert(blogTags).values({ name, slug: tagSlug }).onDuplicateKeyUpdate({ set: { name } })
+      }
+      const slugs = names.map((n) => sanitizeSlug(n) || 'untitled')
+      const tagRows = await db.select({ id: blogTags.id }).from(blogTags).where(inArray(blogTags.slug, slugs))
+      if (tagRows.length > 0) {
+        await db.insert(blogPostTags).values(tagRows.map((t) => ({ postId: resolvedPostId, tagId: t.id })))
+      }
     }
   }
 

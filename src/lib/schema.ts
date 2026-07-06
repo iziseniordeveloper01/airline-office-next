@@ -2,6 +2,7 @@ import { relations } from 'drizzle-orm'
 import {
   mysqlTable, int, varchar, text, longtext,
   boolean, decimal, timestamp, datetime, customType, uniqueIndex, index, mysqlEnum,
+  primaryKey,
 } from 'drizzle-orm/mysql-core'
 
 // MEDIUMBLOB — Drizzle has no native blob builder, customType is the official approach
@@ -214,12 +215,45 @@ export const officeFaqs = mysqlTable('office_faqs', {
 })
 
 // ── BLOG POSTS ────────────────────────────────────────────────────────
+// ── BLOG CATEGORIES ───────────────────────────────────────────────────
+// WordPress-style taxonomy. One primary category per post (categoryId FK on
+// blog_posts); the legacy blog_posts.category varchar is kept as a denormalized
+// display-name copy so existing public/admin reads keep working without joins —
+// renameBlogCategory syncs it.
+export const blogCategories = mysqlTable('blog_categories', {
+  id:          int('id').autoincrement().primaryKey(),
+  name:        varchar('name', { length: 100 }).notNull(),
+  slug:        varchar('slug', { length: 120 }).notNull().unique(),
+  description: varchar('description', { length: 500 }),
+  createdAt:   timestamp('created_at').defaultNow(),
+})
+
+// ── BLOG TAGS ─────────────────────────────────────────────────────────
+// Free-form, many-to-many (WP-style). Tags are auto-created on post save.
+export const blogTags = mysqlTable('blog_tags', {
+  id:        int('id').autoincrement().primaryKey(),
+  name:      varchar('name', { length: 100 }).notNull(),
+  slug:      varchar('slug', { length: 120 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const blogPostTags = mysqlTable('blog_post_tags', {
+  postId: int('post_id').notNull().references(() => blogPosts.id, { onDelete: 'cascade' }),
+  tagId:  int('tag_id').notNull().references(() => blogTags.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.postId, table.tagId] }),
+  tagIdx: index('blog_post_tags_tag_idx').on(table.tagId),
+}))
+
 export const blogPosts = mysqlTable('blog_posts', {
   id:              int('id').autoincrement().primaryKey(),
   slug:            varchar('slug', { length: 150 }).notNull().unique(),
   title:           varchar('title', { length: 255 }).notNull(),
   excerpt:         text('excerpt'),
+  // Denormalized category NAME (see blogCategories comment above). Kept in sync
+  // with categoryId on every save/rename; public pages read this directly.
   category:        varchar('category', { length: 100 }),
+  categoryId:      int('category_id').references(() => blogCategories.id, { onDelete: 'set null' }),
   content:         longtext('content'),         // Tiptap HTML
   heroImageId:     varchar('hero_image_id', { length: 36 }).references(() => images.id),
   ogImageId:       varchar('og_image_id', { length: 36 }).references(() => images.id),

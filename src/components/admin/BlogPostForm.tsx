@@ -11,11 +11,7 @@ import AutosaveIndicator from '@/components/admin/AutosaveIndicator'
 import { generateSlug } from '@/lib/readingTime'
 import { useAutosave } from '@/lib/useAutosave'
 import type { blogPosts } from '@/lib/schema'
-
-const CATEGORIES = [
-  'Safety', 'Airport Guide', 'Travel Tips', 'Airline News',
-  'Baggage', 'Check-in', 'Visa', 'General',
-]
+import type { CategoryWithCount } from '@/lib/data/getTaxonomy'
 
 type BlogPostRow = typeof blogPosts.$inferSelect
 type Faq = { question: string; answer: string }
@@ -24,10 +20,12 @@ type DraftBuffer = { content?: string; metaTitle?: string; metaDescription?: str
 interface Props {
   mode: 'new' | 'edit'
   initialData?: BlogPostRow & { faqs?: Faq[] }
+  categories?: CategoryWithCount[]
+  initialTags?: string[]
   isLive?: boolean
 }
 
-export default function BlogPostForm({ mode, initialData, isLive = false }: Props) {
+export default function BlogPostForm({ mode, initialData, categories = [], initialTags = [], isLive = false }: Props) {
   const [activeTab, setActiveTab] = useState<'content' | 'meta' | 'settings'>('content')
 
   const draft: DraftBuffer = initialData?.draftData ? JSON.parse(initialData.draftData) : {}
@@ -42,6 +40,18 @@ export default function BlogPostForm({ mode, initialData, isLive = false }: Prop
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>(
     initialData?.faqs?.length ? initialData.faqs : [{ question: '', answer: '' }]
   )
+  const [tags, setTags] = useState<string[]>(initialTags)
+  const [tagDraft, setTagDraft] = useState('')
+
+  // WP-style tag entry: Enter or comma commits the chip; duplicates ignored.
+  const commitTag = () => {
+    const name = tagDraft.trim().replace(/,+$/, '')
+    if (name && !tags.some((t) => t.toLowerCase() === name.toLowerCase())) {
+      setTags([...tags, name])
+    }
+    setTagDraft('')
+  }
+  const removeTag = (name: string) => setTags(tags.filter((t) => t !== name))
 
   const autosaveStatus = useAutosave(
     { content, metaTitle, metaDescription },
@@ -70,6 +80,10 @@ export default function BlogPostForm({ mode, initialData, isLive = false }: Prop
     }
     const cleanedFaqs = faqs.filter((f) => f.question.trim() && f.answer.trim())
     formData.set('faqs', JSON.stringify(cleanedFaqs))
+    // Include an uncommitted tag the user typed but didn't press Enter on.
+    const draft = tagDraft.trim().replace(/,+$/, '')
+    const finalTags = draft && !tags.some((t) => t.toLowerCase() === draft.toLowerCase()) ? [...tags, draft] : tags
+    formData.set('tags', JSON.stringify(finalTags))
     // initialData.relatedPosts is already a JSON string (raw `related_posts` text column) — pass through as-is
     formData.set('relatedPosts', initialData?.relatedPosts ?? '[]')
     return saveBlogPost(formData)
@@ -265,12 +279,45 @@ export default function BlogPostForm({ mode, initialData, isLive = false }: Prop
           </div>
 
           <div className={fieldCls}>
-            <label className={labelCls}>Category</label>
-            <select name="category" defaultValue={initialData?.category ?? 'General'} className={inputCls}>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className={labelCls.replace(' mb-1.5', '')}>Category</label>
+              <Link href="/admin/blog/categories" className="text-xs text-indigo-600 hover:text-indigo-700">
+                Manage
+              </Link>
+            </div>
+            <select name="categoryId" defaultValue={initialData?.categoryId ?? ''} className={inputCls}>
+              <option value="">— Uncategorized —</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+          </div>
+
+          <div className={`${fieldCls} col-span-2`}>
+            <label className={labelCls}>Tags</label>
+            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-indigo-500">
+              {tags.map((tag) => (
+                <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                  {tag}
+                  <button type="button" onClick={() => removeTag(tag)} className="text-indigo-400 hover:text-indigo-700" aria-label={`Remove tag ${tag}`}>
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitTag() }
+                  if (e.key === 'Backspace' && !tagDraft && tags.length) removeTag(tags[tags.length - 1])
+                }}
+                onBlur={commitTag}
+                placeholder={tags.length ? '' : 'Add tags — press Enter or comma…'}
+                className="min-w-32 flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-gray-900 focus:outline-none"
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-400">New tags are created automatically on save.</p>
           </div>
 
           <div className={fieldCls}>

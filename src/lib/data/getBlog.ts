@@ -1,6 +1,6 @@
 import { and, inArray, asc, eq, gt, isNotNull, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { blogPosts, blogFaqs } from '@/lib/schema'
+import { blogPosts, blogFaqs, blogCategories, blogTags, blogPostTags } from '@/lib/schema'
 import { imageUrl } from '@/lib/images'
 import { isPubliclyVisible, notTrashed } from '@/lib/visibility'
 import type { BlogPost, BlogPostIndex } from '@/types'
@@ -45,9 +45,20 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   })
   if (!post) return null
 
-  const faqs = await db.select().from(blogFaqs)
-    .where(eq(blogFaqs.postId, post.id))
-    .orderBy(asc(blogFaqs.sortOrder))
+  const [faqs, tags, category] = await Promise.all([
+    db.select().from(blogFaqs)
+      .where(eq(blogFaqs.postId, post.id))
+      .orderBy(asc(blogFaqs.sortOrder)),
+    db.select({ name: blogTags.name, slug: blogTags.slug })
+      .from(blogPostTags)
+      .innerJoin(blogTags, eq(blogPostTags.tagId, blogTags.id))
+      .where(eq(blogPostTags.postId, post.id))
+      .orderBy(asc(blogTags.name)),
+    post.categoryId
+      ? db.select({ slug: blogCategories.slug }).from(blogCategories)
+          .where(eq(blogCategories.id, post.categoryId)).then((r) => r[0] ?? null)
+      : Promise.resolve(null),
+  ])
 
   return {
     ...mapIndex(post),
@@ -59,7 +70,44 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     noindex: !!post.noindex,
     faqs: faqs.map((f) => ({ question: f.question, answer: f.answer })),
     relatedPosts: post.relatedPosts ? JSON.parse(post.relatedPosts) : [],
+    tags,
+    categorySlug: category?.slug ?? '',
   }
+}
+
+// Category archive — /blog/category/[slug]/
+export async function getPostsByCategorySlug(slug: string): Promise<
+  { category: { name: string; slug: string; description: string | null }; posts: BlogPostIndex[] } | null
+> {
+  const [category] = await db.select({
+    id: blogCategories.id, name: blogCategories.name, slug: blogCategories.slug, description: blogCategories.description,
+  }).from(blogCategories).where(eq(blogCategories.slug, slug))
+  if (!category) return null
+
+  const rows = await db.query.blogPosts.findMany({
+    where: and(eq(blogPosts.categoryId, category.id), isPubliclyVisible(blogPosts)),
+    orderBy: (b, { desc }) => [desc(sql`COALESCE(${b.publishedAt}, ${b.scheduledAt})`)],
+  })
+  return { category, posts: rows.map(mapIndex) }
+}
+
+// Tag archive — /blog/tag/[slug]/
+export async function getPostsByTagSlug(slug: string): Promise<
+  { tag: { name: string; slug: string }; posts: BlogPostIndex[] } | null
+> {
+  const [tag] = await db.select({ id: blogTags.id, name: blogTags.name, slug: blogTags.slug })
+    .from(blogTags).where(eq(blogTags.slug, slug))
+  if (!tag) return null
+
+  const postIds = await db.select({ postId: blogPostTags.postId })
+    .from(blogPostTags).where(eq(blogPostTags.tagId, tag.id))
+  if (postIds.length === 0) return { tag, posts: [] }
+
+  const rows = await db.query.blogPosts.findMany({
+    where: and(inArray(blogPosts.id, postIds.map((p) => p.postId)), isPubliclyVisible(blogPosts)),
+    orderBy: (b, { desc }) => [desc(sql`COALESCE(${b.publishedAt}, ${b.scheduledAt})`)],
+  })
+  return { tag, posts: rows.map(mapIndex) }
 }
 
 // Sitemap + generateStaticParams ke liye

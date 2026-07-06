@@ -57,6 +57,13 @@
       "when": 1782982348511,
       "tag": "0007_flippant_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1783321899517,
+      "tag": "0008_many_vin_gonzales",
+      "breakpoints": true
     }
   ]
 }

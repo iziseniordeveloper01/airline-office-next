@@ -10,11 +10,13 @@ import { getOfficeStatusCounts } from '@/lib/data/getOffice'
 import { getAirlineStatusCounts } from '@/lib/data/getAirline'
 import { getBlogStatusCounts } from '@/lib/data/getBlog'
 import { getDashboardData, type EntityType } from '@/lib/data/getDashboard'
+import { getContentHealth } from '@/lib/data/getContentHealth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import StatusBadge from '@/components/admin/StatusBadge'
 import StatTile from '@/components/admin/dashboard/StatTile'
 import PublicationsChart from '@/components/admin/dashboard/PublicationsChart'
+import ContentHealthCard from '@/components/admin/dashboard/ContentHealthCard'
 
 async function getRecentActivity() {
   const [recentOffices, recentAirlines, recentPosts] = await Promise.all([
@@ -76,13 +78,14 @@ function StatusBar({ counts }: { counts: { published: number; scheduled: number;
 }
 
 export default async function AdminDashboard() {
-  const [session, officeCounts, airlineCounts, blogCounts, dash, activity] = await Promise.all([
+  const [session, officeCounts, airlineCounts, blogCounts, dash, activity, health] = await Promise.all([
     auth.api.getSession({ headers: await headers() }),
     getOfficeStatusCounts(),
     getAirlineStatusCounts(),
     getBlogStatusCounts(),
     getDashboardData(),
     getRecentActivity(),
+    getContentHealth(),
   ])
 
   const total = (c: { draft: number; scheduled: number; published: number }) => c.draft + c.scheduled + c.published
@@ -145,6 +148,9 @@ export default async function AdminDashboard() {
           />
         ))}
       </div>
+
+      {/* SEO content health */}
+      <ContentHealthCard health={health} />
 
       {/* Chart + side widgets */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
