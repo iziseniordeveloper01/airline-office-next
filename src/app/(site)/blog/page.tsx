@@ -28,7 +28,7 @@ export default async function BlogPage() {
     <main className="bg-gray-50 min-h-screen">
       {/* Page Header */}
       <div className="bg-indigo-700 text-white py-10">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-1">Blog</h1>
           <p className="text-indigo-200 text-sm">
             Travel guides, airline tips, airport info & more
@@ -36,7 +36,7 @@ export default async function BlogPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Posts Grid ── */}
           <div className="flex-1 min-w-0">

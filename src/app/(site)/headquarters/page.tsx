@@ -25,7 +25,7 @@ export default async function HeadquartersPage() {
   return (
     <main className="bg-gray-50 min-h-screen">
       <div className="bg-indigo-700 text-white py-10">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-1">Airline Headquarters</h1>
           <p className="text-indigo-200 text-sm">
             Head office addresses and contact details for {withHq.length} airlines
@@ -33,7 +33,7 @@ export default async function HeadquartersPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         {withHq.length === 0 ? (
           <p className="text-center py-20 text-gray-400">No headquarters information available yet.</p>
         ) : (

@@ -116,7 +116,7 @@ export default async function AirlineHubPage({ params }: Props) {
             )}
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">Office Locations</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Office Locations</h2>
               {offices.length === 0 ? (
                 <p className="text-gray-500">No office locations published yet for {airline.name}.</p>
               ) : (
@@ -163,7 +163,7 @@ export default async function AirlineHubPage({ params }: Props) {
                 <div className="bg-slate-800 text-white px-4 py-3">
                   <h3 className="font-bold text-sm">Headquarters</h3>
                 </div>
-                <div className="p-4 space-y-3 text-sm text-slate-700">
+                <div className="p-4 space-y-3 text-sm text-gray-700">
                   {airline.headquarters.address && (
                     <div className="flex items-start gap-2">
                       <MapPin className="size-4 text-indigo-500 mt-0.5 shrink-0" />
@@ -192,7 +192,7 @@ export default async function AirlineHubPage({ params }: Props) {
               <div className="bg-indigo-600 text-white px-4 py-3">
                 <h3 className="font-bold text-sm">Airline Info</h3>
               </div>
-              <div className="p-4 space-y-3 text-sm text-slate-700">
+              <div className="p-4 space-y-3 text-sm text-gray-700">
                 {!!airline.foundedYear && (
                   <div className="flex items-center gap-2">
                     <Calendar className="size-4 text-indigo-500 shrink-0" />

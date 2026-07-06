@@ -96,7 +96,7 @@ export default async function BlogPostPage({ params }: Props) {
             />
           )}
           {/* Title Overlay */}
-          <div className="relative z-10 max-w-6xl mx-auto px-4 h-full flex flex-col justify-end pb-8">
+          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 h-full flex flex-col justify-end pb-8">
             {/* Breadcrumb */}
             <nav className="text-indigo-200 text-sm mb-3 flex items-center gap-1.5">
               <Link href="/" className="hover:text-white transition-colors">
@@ -116,7 +116,7 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         {/* ── Main Content Area ── */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
 
             {/* ────────── LEFT: Article Content ────────── */}

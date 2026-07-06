@@ -291,10 +291,10 @@ export default async function OfficePage({ params }: Props) {
                   {office.faqs.map((faq, i) => (
                     <details key={i} className="group rounded-xl border border-gray-200 bg-white open:shadow-sm">
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 select-none">
-                        <span className="text-sm font-semibold text-slate-800">{faq.question}</span>
+                        <span className="text-sm font-semibold text-gray-800">{faq.question}</span>
                         <ChevronRight className="size-4 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-90" />
                       </summary>
-                      <div className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-slate-600">
+                      <div className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-gray-600">
                         {faq.answer}
                       </div>
                     </details>
@@ -312,7 +312,7 @@ export default async function OfficePage({ params }: Props) {
                 <MapPinned className="size-4" />
                 <h3 className="text-sm font-bold">Quick Contact</h3>
               </div>
-              <div className="space-y-3 p-4 text-sm text-slate-700">
+              <div className="space-y-3 p-4 text-sm text-gray-700">
                 {office.address && (
                   <div className="flex items-start gap-2.5">
                     <MapPin className="mt-0.5 size-4 shrink-0 text-indigo-500" />
@@ -372,7 +372,7 @@ export default async function OfficePage({ params }: Props) {
                           </span>
                         )}
                       </div>
-                      <span className="text-sm leading-tight text-slate-700 transition-colors group-hover:text-indigo-600">
+                      <span className="text-sm leading-tight text-gray-700 transition-colors group-hover:text-indigo-600">
                         {related.fullTitle}
                       </span>
                     </Link>
@@ -390,11 +390,11 @@ export default async function OfficePage({ params }: Props) {
 
             {/* Airline / socials */}
             <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-2 bg-slate-100 px-4 py-3 text-slate-700">
+              <div className="flex items-center gap-2 bg-slate-100 px-4 py-3 text-gray-700">
                 <PlaneTakeoff className="size-4 text-indigo-500" />
                 <h3 className="text-sm font-bold">About {office.airlineName}</h3>
               </div>
-              <div className="space-y-3 p-4 text-sm text-slate-700">
+              <div className="space-y-3 p-4 text-sm text-gray-700">
                 <Link href={`/${office.airlineSlug}/`} className="flex items-center gap-2 text-indigo-600 hover:underline">
                   <Ticket className="size-4 text-indigo-500" />
                   Airline overview &amp; all offices
@@ -448,7 +448,7 @@ export default async function OfficePage({ params }: Props) {
 // ─── Reusable sub-components ─────────────────────────────────────────────────
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-4 text-2xl font-bold text-slate-800">{children}</h2>
+  return <h2 className="mb-4 text-2xl font-bold text-gray-800">{children}</h2>
 }
 
 function QuickFact({
@@ -472,7 +472,7 @@ function QuickFact({
       </span>
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-        <p className="truncate text-sm font-medium text-slate-800">{value}</p>
+        <p className="truncate text-sm font-medium text-gray-800">{value}</p>
       </div>
     </>
   )

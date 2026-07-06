@@ -34,7 +34,7 @@ export default async function BlogCategoryPage({ params }: Props) {
   return (
     <main className="bg-gray-50 min-h-screen">
       <div className="bg-indigo-700 text-white py-10">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wide mb-1">Category</p>
           <h1 className="text-3xl font-bold mb-1">{data.category.name}</h1>
           <p className="text-indigo-200 text-sm">
@@ -43,7 +43,7 @@ export default async function BlogCategoryPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1 min-w-0">
             <PostGrid posts={data.posts} emptyMessage="No posts in this category yet." />
