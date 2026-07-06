@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { formatDate } from '@/lib/datetime'
 import type { BlogPostIndex } from '@/types'
 
 interface Props {
@@ -45,7 +46,7 @@ export default function RelatedPosts({ posts }: Props) {
                 {post.title}
               </h3>
               <div className="flex items-center gap-3 text-xs text-gray-400">
-                <span>{post.publishedAt}</span>
+                <span>{formatDate(post.publishedAt)}</span>
                 <span>·</span>
                 <span>{post.readingTime} read</span>
               </div>

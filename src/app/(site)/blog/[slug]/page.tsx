@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getBlogPost, getRelatedPosts } from '@/lib/data/getBlog'
 import { getSidebarData } from '@/lib/data/getSidebar'
+import { formatDate } from '@/lib/datetime'
 import BlogSidebar from '@/components/blog/BlogSidebar'
 import BlogFAQ from '@/components/blog/BlogFAQ'
 import RelatedPosts from '@/components/blog/RelatedPosts'
@@ -140,7 +141,7 @@ export default async function BlogPostPage({ params }: Props) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <time dateTime={post.publishedAt}>{post.publishedAt}</time>
+                  <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
                 </div>
 
                 {/* Reading Time */}

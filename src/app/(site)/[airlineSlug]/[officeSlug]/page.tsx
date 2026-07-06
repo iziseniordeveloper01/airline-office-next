@@ -71,7 +71,10 @@ export default async function OfficePage({ params }: Props) {
 
   const relatedOffices = siblingOffices.filter((o) => o.slug !== officeSlug).slice(0, 5)
 
-  const heroBg = office.heroImage || office.ogImage || '/images/offices/default-hero.jpg'
+  // No file fallback here — public/images/offices/ is empty, so a missing-image
+  // office would render a broken <img>. The hero section already has a slate
+  // background + gradient overlay that reads fine with no photo at all.
+  const heroBg = office.heroImage || office.ogImage
   const location = [office.city, office.country].filter(Boolean).join(', ')
 
   const directionsUrl =
@@ -134,7 +137,7 @@ export default async function OfficePage({ params }: Props) {
 
       {/* ════════════════════ HERO ════════════════════ */}
       <section className="relative isolate flex min-h-104 items-center overflow-hidden bg-slate-900">
-        <Image src={heroBg} alt="" fill priority sizes="100vw" className="object-cover" />
+        {heroBg && <Image src={heroBg} alt="" fill priority sizes="100vw" className="object-cover" />}
         <div className="absolute inset-0 bg-linear-to-r from-slate-900/95 via-slate-900/80 to-slate-900/50" />
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-12 lg:px-8">

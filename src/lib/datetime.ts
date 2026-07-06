@@ -19,3 +19,15 @@ export function fromDatetimeLocalValue(raw: string): string | null {
   const date = new Date(raw)
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
+
+// Public-site display format for stored UTC ISO strings ("May 14, 2026").
+// Explicit locale + UTC zone so server render and client hydration produce the
+// identical string regardless of the machine's locale/timezone (a bare
+// toLocaleDateString() here would risk hydration mismatches and off-by-one-day
+// dates for readers east/west of UTC).
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+}
