@@ -1,0 +1,29 @@
+name: Database backup
+
+# Railway's trial plan doesn't expose automated DB backups, and the CLI has
+# no backup command — so this is the safety net instead: a daily mysqldump
+# stored as a workflow artifact. Not point-in-time recovery, but restores to
+# within 24h are possible, which is the difference between "lost the whole
+# directory" and "lost a day" if a migration or bad query goes wrong.
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump production database
+        run: |
+          mysqldump --no-tablespaces --single-transaction \
+            $(echo "${{ secrets.MYSQL_PUBLIC_URL }}" | sed -E 's#mysql://([^:]+):([^@]+)@([^:]+):([0-9]+)/(.+)#-h \3 -P \4 -u \1 -p\2 \5#') \
+            > backup.sql
+          gzip backup.sql
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backup.sql.gz
+          retention-days: 30

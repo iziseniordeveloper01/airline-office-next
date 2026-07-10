@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # This app's whole architecture already tolerates an unreachable DB at
+    # build time (Railway's own build phase can't reach the private DB host
+    # either — see comments in src/lib/data/*.ts and src/app/sitemap.ts), so
+    # these are placeholders only: they give every process.env.* read a
+    # well-formed string to parse, never a real connection.
+    env:
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/ci_placeholder
+      AUTH_SECRET: ci-placeholder-secret-never-used-in-production
+      BETTER_AUTH_SECRET: ci-placeholder-secret-never-used-in-production
+      BETTER_AUTH_URL: https://example.com
+      NEXT_PUBLIC_SITE_URL: https://example.com
+      NEXT_PUBLIC_BASE_URL: https://example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

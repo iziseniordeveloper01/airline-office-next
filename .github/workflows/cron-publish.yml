@@ -1,0 +1,28 @@
+name: Publish scheduled content
+
+# Railway's own cron-schedule feature isn't wired to this service (it would
+# restart the whole web app on schedule instead of just hitting an endpoint),
+# so this calls /api/cron/publish-scheduled directly. It flips due
+# `scheduled` rows to `published` and busts listing-page caches; a due row is
+# already correct on its own detail page without this (see the route's own
+# comment), so a miss here only means listings lag by up to the 5-minute
+# cache window, not broken content.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call publish-scheduled endpoint
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.SITE_URL }}/api/cron/publish-scheduled")
+          echo "response status: $status"
+          if [ "$status" != "200" ]; then
+            echo "::error::publish-scheduled returned $status"
+            exit 1
+          fi
