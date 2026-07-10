@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 // Behind a reverse proxy (Railway, Render, Fly, a VPS Nginx, a custom domain, or
 // Cloudflare in front) the browser's `origin` host can differ from the
@@ -77,4 +78,20 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// Wraps the config to upload source maps for readable stack traces in
+// Sentry, and to relay client-side errors through a Next.js rewrite so ad
+// blockers don't eat them. Building without SENTRY_ORG/SENTRY_PROJECT set
+// (e.g. before a Sentry project exists yet) just skips the source-map
+// upload step with a warning — it doesn't fail the build, and error
+// reporting itself only depends on NEXT_PUBLIC_SENTRY_DSN, not this.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // NOT using tunnelRoute: proxy.ts's matcher (`/((?!_next/static|...).*)`)
+  // would catch a /monitoring tunnel path and 308 it for the trailing-slash
+  // rule before it ever reached Sentry's rewrite, silently breaking
+  // client-error reporting. Ad-blocker circumvention isn't worth that risk;
+  // server-side capture (the more important half) is unaffected either way.
+})
