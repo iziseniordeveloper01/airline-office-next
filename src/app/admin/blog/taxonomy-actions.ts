@@ -7,11 +7,15 @@ import { db } from '@/lib/db'
 import { blogCategories, blogTags, blogPosts } from '@/lib/schema'
 import { requireRole } from '@/lib/auth/requireRole'
 import { sanitizeSlug } from '@/lib/slug'
+import { bustTags, CACHE_TAGS } from '@/lib/cache'
 import { logActivity } from '@/lib/activity'
 
 const nameSchema = z.string().trim().min(1).max(100)
 
 function revalidateTaxonomyPaths() {
+  // Renaming/deleting a term changes the denormalized post category too, so bust
+  // both the taxonomy and blog caches.
+  bustTags(CACHE_TAGS.taxonomy, CACHE_TAGS.blog)
   revalidatePath('/admin/blog/categories')
   revalidatePath('/admin/blog')
   revalidatePath('/blog')

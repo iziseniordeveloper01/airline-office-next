@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { BlogFAQ } from '@/types'
+import { jsonLd as toJsonLd } from '@/lib/utils'
 
 interface Props {
   faqs: BlogFAQ[]
@@ -22,7 +23,7 @@ function FAQItem({ faq, index }: { faq: BlogFAQ; index: number }) {
         </span>
         {/* Arrow icon */}
         <svg
-          className={`w-5 h-5 text-indigo-500 flex-shrink-0 transition-transform duration-200 ${
+          className={`w-5 h-5 text-blue-700 flex-shrink-0 transition-transform duration-200 ${
             open ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -75,7 +76,7 @@ export default function BlogFAQ({ faqs }: Props) {
       {/* FAQ JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }}
       />
 
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">

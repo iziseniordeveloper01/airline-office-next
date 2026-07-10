@@ -20,7 +20,7 @@ function Widget({
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden mb-6">
       {/* Widget Header */}
-      <div className="bg-indigo-600 px-5 py-3">
+      <div className="bg-blue-800 px-5 py-3">
         <h3 className="text-white font-semibold text-sm uppercase tracking-wide">
           {title}
         </h3>
@@ -55,7 +55,7 @@ function LatestPostsWidget({ posts }: { posts: BlogPostIndex[] }) {
                 )}
               </div>
               {/* Title */}
-              <span className="text-sm text-gray-700 group-hover:text-indigo-600 leading-5 transition-colors line-clamp-3">
+              <span className="text-sm text-gray-700 group-hover:text-blue-800 leading-5 transition-colors line-clamp-3">
                 {post.title}
               </span>
             </Link>
@@ -89,7 +89,7 @@ function LatestPagesWidget({
             >
               {/* Location icon */}
               <svg
-                className="w-4 h-4 mt-0.5 text-indigo-400 flex-shrink-0"
+                className="w-4 h-4 mt-0.5 text-blue-500 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -108,7 +108,7 @@ function LatestPagesWidget({
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <span className="text-sm text-gray-700 group-hover:text-indigo-600 leading-5 transition-colors">
+              <span className="text-sm text-gray-700 group-hover:text-blue-800 leading-5 transition-colors">
                 {toTitle(page.airlineSlug)} {toTitle(page.slug)}
               </span>
             </Link>
@@ -143,7 +143,7 @@ function PopularPagesWidget({
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               <div>
-                <span className="text-sm text-gray-700 group-hover:text-indigo-600 leading-5 transition-colors block">
+                <span className="text-sm text-gray-700 group-hover:text-blue-800 leading-5 transition-colors block">
                   {page.title}
                 </span>
               </div>
@@ -167,10 +167,10 @@ function TopAirlinesWidget({ airlines }: { airlines: AirlineIndex[] }) {
               className="flex items-center gap-3 group"
             >
               {/* IATA Badge */}
-              <span className="inline-flex items-center justify-center w-10 h-7 rounded bg-indigo-50 text-indigo-700 font-bold text-xs flex-shrink-0 group-hover:bg-indigo-100 transition-colors">
+              <span className="inline-flex items-center justify-center w-10 h-7 rounded bg-blue-50 text-blue-800 font-bold text-xs flex-shrink-0 group-hover:bg-blue-100 transition-colors">
                 {airline.iataCode}
               </span>
-              <span className="text-sm text-gray-700 group-hover:text-indigo-600 transition-colors">
+              <span className="text-sm text-gray-700 group-hover:text-blue-800 transition-colors">
                 {airline.name}
               </span>
             </Link>

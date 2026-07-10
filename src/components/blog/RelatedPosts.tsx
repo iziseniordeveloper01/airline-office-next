@@ -21,7 +21,7 @@ export default function RelatedPosts({ posts }: Props) {
           <Link
             key={post.slug}
             href={`/blog/${post.slug}/`}
-            className="group block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-indigo-300 hover:shadow-md transition-all duration-200"
+            className="group block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200"
           >
             {/* Thumbnail */}
             <div className="relative h-44 overflow-hidden bg-gray-100">
@@ -35,14 +35,14 @@ export default function RelatedPosts({ posts }: Props) {
                 />
               )}
               {/* Category badge */}
-              <span className="absolute top-3 left-3 bg-indigo-600 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+              <span className="absolute top-3 left-3 bg-blue-800 text-white text-xs font-medium px-2.5 py-1 rounded-full">
                 {post.category}
               </span>
             </div>
 
             {/* Content */}
             <div className="p-4">
-              <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-5 mb-2 line-clamp-2">
+              <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-800 transition-colors leading-5 mb-2 line-clamp-2">
                 {post.title}
               </h3>
               <div className="flex items-center gap-3 text-xs text-gray-400">

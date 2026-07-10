@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 import { eq, ne, and, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { blogPosts, blogFaqs, blogCategories, blogTags, blogPostTags } from '@/lib/schema'
@@ -10,10 +11,23 @@ import { cleanHtml } from '@/lib/sanitize'
 import { ensureUniqueSlug, readingTime, sanitizeSlug } from '@/lib/slug'
 import { deleteReplacedImage } from '@/lib/images'
 import { isCurrentlyLive } from '@/lib/visibility'
+import { recordRedirect } from '@/lib/redirects'
+import { pingIndexNow } from '@/lib/indexnow'
 import { resolveStatusFields } from '@/lib/validation/content'
+import { safeUrl, parseFaqs } from '@/lib/validation/urls'
+import { bustTags, CACHE_TAGS } from '@/lib/cache'
 import { logActivity } from '@/lib/activity'
 
+// Server-side guard for a saveBlogPost request — the browser form validation
+// doesn't protect a tampered/direct POST.
+const blogServerSchema = z.object({
+  title: z.string().trim().min(1, { message: 'Title is required' }).max(300),
+})
+
 function revalidateBlogPaths(slug: string) {
+  // Blog reads and archives use the `blog` tag; category/tag counts use
+  // `taxonomy`. A post save can change both (e.g. new tags), so bust both.
+  bustTags(CACHE_TAGS.blog, CACHE_TAGS.taxonomy)
   revalidatePath('/blog')
   revalidatePath(`/blog/${slug}`)
   revalidatePath('/admin/blog')
@@ -22,6 +36,7 @@ function revalidateBlogPaths(slug: string) {
 export async function saveBlogPost(formData: FormData) {
   const session = await requireRole('editor')
   const raw = Object.fromEntries(formData)
+  const { title } = blogServerSchema.parse(raw)
   const postId = raw.id ? parseInt(raw.id as string) : null
   const content = cleanHtml(raw.content as string)
 
@@ -36,15 +51,14 @@ export async function saveBlogPost(formData: FormData) {
       }).from(blogPosts).where(eq(blogPosts.id, postId)))[0] ?? null
     : null
 
-  const locked = existing ? isCurrentlyLive(existing) : false
-  const slug = locked
-    ? existing!.slug
-    : await ensureUniqueSlug(raw.slug as string, async (candidate) => {
-        const rows = await db.select({ id: blogPosts.id }).from(blogPosts).where(
-          and(eq(blogPosts.slug, candidate), postId ? ne(blogPosts.id, postId) : undefined)
-        )
-        return rows.length > 0
-      })
+  // Slug is editable at any time, live or not (any role) — a rename records a
+  // redirect below instead of being blocked, so the old public URL keeps working.
+  const slug = await ensureUniqueSlug(raw.slug as string, async (candidate) => {
+    const rows = await db.select({ id: blogPosts.id }).from(blogPosts).where(
+      and(eq(blogPosts.slug, candidate), postId ? ne(blogPosts.id, postId) : undefined)
+    )
+    return rows.length > 0
+  })
 
   const { status, scheduledAt, publishedAt } = resolveStatusFields(
     { status: raw.status as string, scheduledAt: (raw.scheduledAt as string) || null },
@@ -60,7 +74,7 @@ export async function saveBlogPost(formData: FormData) {
 
   const data = {
     slug,
-    title:           raw.title as string,
+    title,
     excerpt:         (raw.excerpt as string) || null,
     category:        category?.name ?? null,
     categoryId:      category ? categoryId : null,
@@ -71,7 +85,7 @@ export async function saveBlogPost(formData: FormData) {
     relatedPosts:    (raw.relatedPosts as string) || '[]',
     metaTitle:       (raw.metaTitle as string) || null,
     metaDescription: (raw.metaDescription as string) || null,
-    canonicalUrl:    (raw.canonicalUrl as string) || null,
+    canonicalUrl:    safeUrl(raw.canonicalUrl),
     noindex:         raw.noindex === 'true',
     readingTime:     readingTime(content),
     status,
@@ -81,53 +95,72 @@ export async function saveBlogPost(formData: FormData) {
     draftSavedAt:    null,
   }
 
-  let resolvedPostId: number
+  // Validated + bounded FAQ list (drops malformed/empty entries; caps count).
+  const faqs = parseFaqs(raw.faqs)
 
+  // Tag names — sent as a JSON array; unknown tags are auto-created (WP
+  // behaviour). Parse/bound outside the transaction so a bad payload can't abort
+  // the whole save; `undefined` means "field not sent", distinct from "[]".
+  const tagsRaw = raw.tags as string | undefined
+  let tagNames: string[] | null = null
+  if (tagsRaw !== undefined) {
+    let parsedTags: unknown = []
+    try { parsedTags = JSON.parse(tagsRaw) } catch { parsedTags = [] }
+    tagNames = Array.isArray(parsedTags)
+      ? Array.from(new Set(parsedTags.filter((t): t is string => typeof t === 'string').map((t) => t.trim()).filter(Boolean))).slice(0, 20)
+      : []
+  }
+
+  // The row write plus its FAQ and tag rewrites are one atomic unit — a mid-way
+  // failure must never leave the post updated but its FAQs/tags deleted.
+  let resolvedPostId: number = postId ?? 0
+
+  await db.transaction(async (tx) => {
+    if (postId) {
+      await tx.update(blogPosts).set(data).where(eq(blogPosts.id, postId))
+      await tx.delete(blogFaqs).where(eq(blogFaqs.postId, postId))
+    } else {
+      const [result] = await tx.insert(blogPosts).values(data)
+      resolvedPostId = result.insertId
+    }
+
+    if (faqs.length > 0) {
+      await tx.insert(blogFaqs).values(
+        faqs.map((faq, i) => ({ postId: resolvedPostId, question: faq.question, answer: faq.answer, sortOrder: i }))
+      )
+    }
+
+    if (tagNames !== null) {
+      await tx.delete(blogPostTags).where(eq(blogPostTags.postId, resolvedPostId))
+      if (tagNames.length > 0) {
+        for (const name of tagNames) {
+          const tagSlug = sanitizeSlug(name) || 'untitled'
+          await tx.insert(blogTags).values({ name, slug: tagSlug }).onDuplicateKeyUpdate({ set: { name } })
+        }
+        const slugs = tagNames.map((n) => sanitizeSlug(n) || 'untitled')
+        const tagRows = await tx.select({ id: blogTags.id }).from(blogTags).where(inArray(blogTags.slug, slugs))
+        if (tagRows.length > 0) {
+          await tx.insert(blogPostTags).values(tagRows.map((t) => ({ postId: resolvedPostId, tagId: t.id })))
+        }
+      }
+    }
+  })
+
+  // Orphaned-image cleanup runs after commit — different table, must not roll
+  // the content write back if it fails.
   if (postId) {
-    resolvedPostId = postId
-
-    await db.update(blogPosts).set(data).where(eq(blogPosts.id, postId))
-    await db.delete(blogFaqs).where(eq(blogFaqs.postId, postId))
-
     await Promise.all([
       deleteReplacedImage(existing?.heroImageId, data.heroImageId),
       deleteReplacedImage(existing?.ogImageId, data.ogImageId),
     ])
-  } else {
-    const [result] = await db.insert(blogPosts).values(data)
-    resolvedPostId = result.insertId
   }
 
-  const faqsRaw = raw.faqs as string
-  if (faqsRaw) {
-    const faqs: Array<{ question: string; answer: string }> = JSON.parse(faqsRaw)
-    if (faqs.length > 0) {
-      await db.insert(blogFaqs).values(
-        faqs.map((faq, i) => ({ postId: resolvedPostId, question: faq.question, answer: faq.answer, sortOrder: i }))
-      )
-    }
+  if (existing && existing.slug !== slug) {
+    await recordRedirect(`/blog/${existing.slug}`, `/blog/${slug}`)
   }
 
-  // Tags — sent as a JSON array of names; unknown tags are auto-created
-  // (WP behaviour), then the junction rows are replaced wholesale.
-  const tagsRaw = raw.tags as string | undefined
-  if (tagsRaw !== undefined) {
-    const names = Array.from(new Set(
-      (JSON.parse(tagsRaw) as string[]).map((t) => t.trim()).filter(Boolean)
-    )).slice(0, 20)
-
-    await db.delete(blogPostTags).where(eq(blogPostTags.postId, resolvedPostId))
-    if (names.length > 0) {
-      for (const name of names) {
-        const tagSlug = sanitizeSlug(name) || 'untitled'
-        await db.insert(blogTags).values({ name, slug: tagSlug }).onDuplicateKeyUpdate({ set: { name } })
-      }
-      const slugs = names.map((n) => sanitizeSlug(n) || 'untitled')
-      const tagRows = await db.select({ id: blogTags.id }).from(blogTags).where(inArray(blogTags.slug, slugs))
-      if (tagRows.length > 0) {
-        await db.insert(blogPostTags).values(tagRows.map((t) => ({ postId: resolvedPostId, tagId: t.id })))
-      }
-    }
+  if (status === 'published') {
+    await pingIndexNow([`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}/`])
   }
 
   revalidateBlogPaths(slug)
@@ -191,6 +224,7 @@ export async function deleteBlogPostPermanently(id: number) {
   const session = await requireRole('admin')
   const [post] = await db.select({ slug: blogPosts.slug, title: blogPosts.title }).from(blogPosts).where(eq(blogPosts.id, id))
   await db.delete(blogPosts).where(eq(blogPosts.id, id))
+  bustTags(CACHE_TAGS.blog, CACHE_TAGS.taxonomy)
   revalidatePath('/admin/blog')
   revalidatePath('/admin/blog/trash')
   revalidatePath(`/blog/${post?.slug ?? ''}`)

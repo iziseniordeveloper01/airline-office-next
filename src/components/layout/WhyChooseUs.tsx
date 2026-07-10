@@ -16,7 +16,7 @@ const features = [
   {
     name: 'Easy Search',
     description:
-      'Quickly find the airline office you need by searching airline name, city, or country — no clutter, no ads.',
+      'Quickly find the airline you need by name or IATA code, then browse its offices worldwide — no clutter, no ads.',
     icon: Search,
   },
   {
@@ -32,7 +32,7 @@ export default function WhyChooseUs() {
     <section className="bg-gray-50 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <p className="text-base font-semibold text-indigo-600">Why Choose Us</p>
+          <p className="text-base font-semibold text-blue-800">Why Choose Us</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Your Trusted Source for Airline Office Information
           </h2>
@@ -41,7 +41,7 @@ export default function WhyChooseUs() {
         <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
             <div key={feature.name} className="flex flex-col gap-4">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-indigo-600">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-blue-800">
                 <feature.icon className="size-6 text-white" aria-hidden="true" />
               </div>
               <div>

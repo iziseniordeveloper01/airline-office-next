@@ -1,4 +1,5 @@
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import AppSidebar from '@/components/admin/AppSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
@@ -18,7 +19,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  // The real auth gate for every /admin page. proxy.ts only does an optimistic
+  // cookie-presence redirect (forgeable, CVE-2025-29927); this validates the
+  // session server-side so no admin page ever renders unauthenticated. The
+  // login page lives in src/app/(auth)/admin/login — outside this layout —
+  // so this redirect can never loop. Pages needing more than "any staff role"
+  // (users, settings, activity) keep their own requireRole('admin') on top.
   const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) redirect('/admin/login/')
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>

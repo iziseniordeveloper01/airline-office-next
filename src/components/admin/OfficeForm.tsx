@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Controller, useForm, useWatch, type UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
@@ -15,6 +15,9 @@ import AutosaveIndicator from '@/components/admin/AutosaveIndicator'
 import { generateSlug } from '@/lib/readingTime'
 import { useAutosave } from '@/lib/useAutosave'
 import { isRedirectError } from '@/lib/isRedirectError'
+import { officePreviewHref } from '@/lib/previewHref'
+import { scoreSeo } from '@/lib/seo/scoreSeo'
+import SeoScoreIndicator from '@/components/admin/SeoScoreIndicator'
 import { officeFormSchema, type OfficeFormValues } from '@/lib/validation/office'
 import type { offices } from '@/lib/schema'
 import { Button } from '@/components/ui/button'
@@ -92,11 +95,23 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
   const [isHeadquarters, setIsHeadquarters] = useState(!!initialData?.isHeadquarters)
   const [noindex, setNoindex] = useState(!!initialData?.noindex)
   const [faqs, setFaqs] = useState<Faq[]>(initialData?.faqs?.length ? initialData.faqs : [{ question: '', answer: '' }])
+  const [heroImageId, setHeroImageId] = useState(initialData?.heroImageId ?? '')
+  const [ogImageId, setOgImageId] = useState(initialData?.ogImageId ?? '')
 
   const [content, metaTitle, metaDescription] = useWatch({ control, name: ['content', 'metaTitle', 'metaDescription'] })
   const status = watch('status')
   const scheduledAt = watch('scheduledAt')
   const slug = watch('slug')
+  const ownerAirlineSlug = airlines.find((a) => a.id === initialData?.airlineId)?.slug
+
+  const seoResult = useMemo(() => scoreSeo({
+    metaTitle: metaTitle ?? '',
+    metaDescription: metaDescription ?? '',
+    slug: slug ?? '',
+    contentText: (content ?? '').replace(/<[^>]+>/g, ' '),
+    hasImage: !!(heroImageId || ogImageId),
+    noindex,
+  }), [metaTitle, metaDescription, slug, content, heroImageId, ogImageId, noindex])
 
   const autosaveStatus = useAutosave(
     { content, metaTitle, metaDescription },
@@ -149,6 +164,13 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
         <h1 className="text-xl font-semibold tracking-tight">{mode === 'new' ? 'New Office' : 'Edit Office'}</h1>
         <div className="flex items-center gap-3">
           {mode === 'edit' && <AutosaveIndicator status={autosaveStatus} />}
+          {mode === 'edit' && initialData && ownerAirlineSlug && (
+            <Button asChild variant="outline">
+              <a href={officePreviewHref(initialData.status, ownerAirlineSlug, initialData.slug)} target="_blank" rel="noopener noreferrer">
+                Preview
+              </a>
+            </Button>
+          )}
           <Button asChild variant="outline">
             <Link href="/admin/offices">Cancel</Link>
           </Button>
@@ -208,9 +230,9 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
 
           <Field data-invalid={!!errors.slug}>
             <FieldLabel htmlFor="slug">Slug *</FieldLabel>
-            <Input id="slug" className="font-mono" readOnly={isLive} aria-invalid={!!errors.slug} {...register('slug')} />
+            <Input id="slug" className="font-mono" aria-invalid={!!errors.slug} {...register('slug')} />
             {isLive ? (
-              <FieldDescription className="text-amber-600">Slug is locked once live — this preserves your public URL.</FieldDescription>
+              <FieldDescription className="text-amber-600">Changing this updates the live public URL — the old link will redirect automatically.</FieldDescription>
             ) : (
               <FieldDescription className="font-mono">yoursite.com/airline-slug/{slug || '…'}/</FieldDescription>
             )}
@@ -245,8 +267,8 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
             </Select>
           </Field>
 
-          <ImagePicker label="Hero Image" name="heroImageId" initialId={initialData?.heroImageId} />
-          <ImagePicker label="OG Image" name="ogImageId" initialId={initialData?.ogImageId} />
+          <ImagePicker label="Hero Image" name="heroImageId" initialId={initialData?.heroImageId} onChange={setHeroImageId} />
+          <ImagePicker label="OG Image" name="ogImageId" initialId={initialData?.ogImageId} onChange={setOgImageId} />
 
           <div className="col-span-2 flex gap-6">
             <div className="flex items-center gap-2">
@@ -331,6 +353,9 @@ export default function OfficeForm({ mode, initialData, airlines, isLive = false
         </TabsContent>
 
         <TabsContent forceMount value="seo" className="space-y-5">
+          <div className="flex justify-end">
+            <SeoScoreIndicator result={seoResult} />
+          </div>
           <Field>
             <FieldLabel htmlFor="metaTitle">Meta Title</FieldLabel>
             <Input id="metaTitle" placeholder="Qatar Airways London Office +1-877-294-7147" {...register('metaTitle')} />

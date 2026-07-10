@@ -13,7 +13,7 @@ export default async function Headquarters() {
     <section className="bg-gray-50 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <p className="text-base font-semibold text-indigo-600">Headquarters</p>
+          <p className="text-base font-semibold text-blue-800">Headquarters</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Airline Head Office Addresses
           </h2>
@@ -28,7 +28,7 @@ export default async function Headquarters() {
             <Link
               key={airline.slug}
               href={`/${airline.slug}/`}
-              className="group flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-[color,border-color,box-shadow] hover:border-indigo-200 hover:shadow-md"
+              className="group flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-[color,border-color,box-shadow] hover:border-blue-200 hover:shadow-md"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
                 {airline.logo ? (
@@ -38,7 +38,7 @@ export default async function Headquarters() {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">
                   {airline.name}
                 </p>
                 <p className="mt-1 flex items-start gap-1.5 text-xs text-gray-500 leading-relaxed">
@@ -53,7 +53,7 @@ export default async function Headquarters() {
         <div className="mt-10 text-center">
           <Link
             href="/headquarters"
-            className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-blue-800 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
           >
             View All Headquarters →
           </Link>

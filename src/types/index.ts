@@ -14,6 +14,7 @@ export interface AirlineIndex {
   hqAddress: string
   hqPhone: string
   hqEmail: string
+  noindex: boolean
 }
 
 export interface Airline {
@@ -111,6 +112,7 @@ export interface BlogPostIndex {
   publishedAt: string
   updatedAt: string
   readingTime: string
+  noindex: boolean
 }
 
 export interface BlogFAQ {

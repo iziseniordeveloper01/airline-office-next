@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Plane, Building2, Newspaper, FolderOpen, Image, Users, Activity, Settings, Trash2, LogOut, PlaneTakeoff } from 'lucide-react'
+import { LayoutDashboard, Plane, Building2, Newspaper, FolderOpen, Image, Users, Activity, Settings, ArrowRightLeft, Trash2, LogOut, PlaneTakeoff } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import {
   Sidebar,
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { href: '/admin/media', label: 'Media', icon: Image },
   { href: '/admin/users', label: 'Users', icon: Users, adminOnly: true },
   { href: '/admin/activity', label: 'Activity', icon: Activity, adminOnly: true },
+  { href: '/admin/redirects', label: 'Redirects', icon: ArrowRightLeft, adminOnly: true },
   { href: '/admin/settings', label: 'Settings', icon: Settings, adminOnly: true },
   { href: '/admin/trash', label: 'Trash', icon: Trash2 },
 ]

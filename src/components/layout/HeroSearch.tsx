@@ -36,7 +36,7 @@ export default function HeroSearch() {
       </div>
       <button
         type="submit"
-        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-blue-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
       >
         <Search aria-hidden="true" className="size-4" />
         <span className="hidden sm:inline">Search</span>

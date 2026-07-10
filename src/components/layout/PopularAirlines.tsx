@@ -14,7 +14,7 @@ export default async function PopularAirlines() {
     <section className="bg-white py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="max-w-2xl">
-          <p className="text-base font-semibold text-indigo-600">Popular Airlines</p>
+          <p className="text-base font-semibold text-blue-800">Popular Airlines</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Find Office Details for Top Airlines
           </h2>
@@ -29,7 +29,7 @@ export default async function PopularAirlines() {
             <Link
               key={airline.slug}
               href={`/${airline.slug}/`}
-              className="group flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-[color,border-color,box-shadow] hover:border-indigo-200 hover:shadow-md"
+              className="group flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-[color,border-color,box-shadow] hover:border-blue-200 hover:shadow-md"
             >
               <div className="flex h-16 w-full items-center justify-center">
                 {airline.logo ? (
@@ -45,7 +45,7 @@ export default async function PopularAirlines() {
                 )}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-800 transition-colors">
                   {airline.name}
                 </p>
                 <p className="text-xs text-gray-500">{airline.officeCount} Offices</p>
@@ -57,7 +57,7 @@ export default async function PopularAirlines() {
         <div className="mt-10 text-center">
           <Link
             href="/airlines"
-            className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-blue-800 px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
           >
             View All Airlines →
           </Link>

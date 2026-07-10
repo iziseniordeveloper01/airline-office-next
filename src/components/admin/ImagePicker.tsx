@@ -14,14 +14,21 @@ interface Props {
   label: string
   name: string // hidden input name — submits the image id
   initialId?: string | null
+  onChange?: (id: string) => void // lets a parent observe the current image id live (e.g. for SEO scoring)
 }
 
-export default function ImagePicker({ label, name, initialId }: Props) {
+export default function ImagePicker({ label, name, initialId, onChange }: Props) {
   const [imageId, setImageId] = useState(initialId ?? '')
   const [previewUrl, setPreviewUrl] = useState(initialId ? `/api/images/${initialId}` : '')
   const [uploading, setUploading] = useState(false)
   const [libraryOpen, setLibraryOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const updateImage = (id: string, url: string) => {
+    setImageId(id)
+    setPreviewUrl(url)
+    onChange?.(id)
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -36,8 +43,7 @@ export default function ImagePicker({ label, name, initialId }: Props) {
       const fd = new FormData()
       fd.append('file', file)
       const { id, url } = await uploadImage(fd)
-      setImageId(id)
-      setPreviewUrl(url)
+      updateImage(id, url)
     } catch {
       toast.error('Upload failed. Please try again.')
     } finally {
@@ -46,10 +52,7 @@ export default function ImagePicker({ label, name, initialId }: Props) {
     }
   }
 
-  const clear = () => {
-    setImageId('')
-    setPreviewUrl('')
-  }
+  const clear = () => updateImage('', '')
 
   return (
     <div className="space-y-1.5">
@@ -92,10 +95,7 @@ export default function ImagePicker({ label, name, initialId }: Props) {
       <MediaPickerDialog
         open={libraryOpen}
         onOpenChange={setLibraryOpen}
-        onSelect={(id, url) => {
-          setImageId(id)
-          setPreviewUrl(url)
-        }}
+        onSelect={(id, url) => updateImage(id, url)}
       />
     </div>
   )

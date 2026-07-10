@@ -20,10 +20,10 @@ export default async function AirlinesPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <div className="bg-indigo-700 text-white py-10">
+      <div className="bg-blue-800 text-white py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-1">Airlines</h1>
-          <p className="text-indigo-200 text-sm">{airlines.length} airlines listed</p>
+          <p className="text-blue-200 text-sm">{airlines.length} airlines listed</p>
         </div>
       </div>
 

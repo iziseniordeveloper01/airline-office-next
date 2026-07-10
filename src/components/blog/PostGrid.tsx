@@ -17,7 +17,7 @@ export default function PostGrid({ posts, emptyMessage = 'No blog posts yet.' }:
           <Link
             key={post.slug}
             href={`/blog/${post.slug}/`}
-            className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all duration-200"
+            className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200"
           >
             {/* Featured Image */}
             <div className="relative h-48 overflow-hidden bg-gray-100">
@@ -31,7 +31,7 @@ export default function PostGrid({ posts, emptyMessage = 'No blog posts yet.' }:
                 />
               )}
               {post.category && (
-                <span className="absolute top-3 left-3 bg-indigo-600 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+                <span className="absolute top-3 left-3 bg-blue-800 text-white text-xs font-medium px-2.5 py-1 rounded-full">
                   {post.category}
                 </span>
               )}
@@ -39,7 +39,7 @@ export default function PostGrid({ posts, emptyMessage = 'No blog posts yet.' }:
 
             {/* Content */}
             <div className="p-5">
-              <h2 className="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-6 mb-2 line-clamp-2">
+              <h2 className="text-base font-semibold text-gray-900 group-hover:text-blue-800 transition-colors leading-6 mb-2 line-clamp-2">
                 {post.title}
               </h2>
               <p className="text-sm text-gray-500 leading-5 mb-4 line-clamp-2">
@@ -47,7 +47,7 @@ export default function PostGrid({ posts, emptyMessage = 'No blog posts yet.' }:
               </p>
               <div className="flex items-center justify-between gap-3 text-xs text-gray-400">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
                     {post.author ? post.author.charAt(0).toUpperCase() : '?'}
                   </span>
                   <span className="truncate">{post.author}</span>

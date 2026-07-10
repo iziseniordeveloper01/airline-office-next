@@ -51,6 +51,30 @@ const nextConfig: NextConfig = {
       allowedOrigins,
     },
   },
+  // Baseline security headers on every response. No CSP here yet — the public
+  // pages inline JSON-LD and next/image styles, so a script-src CSP needs nonces
+  // and is deferred; these headers are the safe, no-regression subset.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          // Clickjacking: the admin login/panel must never be framed. DENY is
+          // safe because nothing in this app embeds its own pages in a frame.
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          // Stop MIME sniffing (defense-in-depth for /api/images/[id]).
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Send only the origin cross-site; keep full path same-origin.
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // No camera/mic/geo needed anywhere in this app.
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // Force HTTPS for 2 years once seen over TLS (harmless on localhost/HTTP).
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig

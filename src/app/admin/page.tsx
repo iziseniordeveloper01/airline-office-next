@@ -1,7 +1,7 @@
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { desc, eq } from 'drizzle-orm'
-import { Building2, CalendarClock, Newspaper, Plane, Plus } from 'lucide-react'
+import { Activity, BarChart3, Building2, CalendarClock, ListChecks, Newspaper, Plane, Plus } from 'lucide-react'
 import { auth } from '@/auth'
 import { db } from '@/lib/db'
 import { airlines, offices, blogPosts } from '@/lib/schema'
@@ -61,19 +61,64 @@ const QUICK_ACTIONS = [
   { href: '/admin/blog/new', label: 'New Post' },
 ]
 
+// One source of truth for the three content states — shared by the StatusBar
+// segments and the legend below. Colors match the StatusBadge used across every
+// admin table (green = live, blue = scheduled, amber = draft) so the same state
+// always reads the same color everywhere.
+const STATUS_STYLES = [
+  { key: 'published', label: 'Live', color: '#16a34a' },
+  { key: 'scheduled', label: 'Scheduled', color: '#2563eb' },
+  { key: 'draft', label: 'Draft', color: '#f59e0b' },
+] as const
+
 function StatusBar({ counts }: { counts: { published: number; scheduled: number; draft: number } }) {
   const total = counts.published + counts.scheduled + counts.draft || 1
-  const segs = [
-    { v: counts.published, color: 'var(--primary)' },
-    { v: counts.scheduled, color: '#0ea5e9' },
-    { v: counts.draft, color: '#f59e0b' },
-  ]
+  // Color alone conveys meaning here, so label the bar for screen readers and
+  // give each segment a title tooltip (WCAG: don't rely on color only).
+  const summary = STATUS_STYLES.map((s) => `${counts[s.key]} ${s.label.toLowerCase()}`).join(', ')
   return (
-    <div className="flex h-2 overflow-hidden rounded-full bg-muted">
-      {segs.map((s, i) => (
-        <div key={i} style={{ width: `${(s.v / total) * 100}%`, background: s.color }} />
+    <div role="img" aria-label={summary} className="flex h-2 overflow-hidden rounded-full bg-muted">
+      {STATUS_STYLES.map((s) => (
+        <div
+          key={s.key}
+          title={`${s.label}: ${counts[s.key]}`}
+          style={{ width: `${(counts[s.key] / total) * 100}%`, background: s.color }}
+        />
       ))}
     </div>
+  )
+}
+
+// Single source for how each content type is shown across the dashboard — icon,
+// accent colour and label. The KPI tiles, the recent-activity rows and the
+// scheduled list all read from this so the same entity always looks the same
+// (previously the tiles used icons while the lists used bare text).
+const ENTITY_META = {
+  offices: { label: 'Offices', single: 'Office', icon: Building2, accent: 'var(--primary)' },
+  airlines: { label: 'Airlines', single: 'Airline', icon: Plane, accent: '#0ea5e9' },
+  blog: { label: 'Blog Posts', single: 'Blog', icon: Newspaper, accent: '#f59e0b' },
+} as const satisfies Record<EntityType, { label: string; single: string; icon: React.ComponentType<{ className?: string }>; accent: string }>
+
+const ENTITY_BY_SINGLE: Record<'Office' | 'Airline' | 'Blog', (typeof ENTITY_META)[EntityType]> = {
+  Office: ENTITY_META.offices,
+  Airline: ENTITY_META.airlines,
+  Blog: ENTITY_META.blog,
+}
+
+// Small colored icon tile for a content type — mirrors the KPI-tile icon style
+// so a row's type is scannable by icon+colour instead of a plain text label.
+function EntityTag({ type }: { type: 'Office' | 'Airline' | 'Blog' }) {
+  const meta = ENTITY_BY_SINGLE[type]
+  const Icon = meta.icon
+  return (
+    <span
+      title={type}
+      aria-label={type}
+      className="flex size-7 shrink-0 items-center justify-center rounded-md"
+      style={{ background: `color-mix(in oklch, ${meta.accent} 14%, transparent)`, color: meta.accent }}
+    >
+      <Icon className="size-4" />
+    </span>
   )
 }
 
@@ -90,19 +135,22 @@ export default async function AdminDashboard() {
 
   const total = (c: { draft: number; scheduled: number; published: number }) => c.draft + c.scheduled + c.published
 
-  const tiles: {
-    key: EntityType
-    label: string
-    href: string
-    icon: React.ComponentType<{ className?: string }>
-    accent: string
-    value: number
-    spark: number[]
-  }[] = [
-    { key: 'offices', label: 'Offices', href: '/admin/offices', icon: Building2, accent: 'var(--primary)', value: total(officeCounts), spark: dash.months.map((m) => m.offices) },
-    { key: 'airlines', label: 'Airlines', href: '/admin/airlines', icon: Plane, accent: '#0ea5e9', value: total(airlineCounts), spark: dash.months.map((m) => m.airlines) },
-    { key: 'blog', label: 'Blog Posts', href: '/admin/blog', icon: Newspaper, accent: '#f59e0b', value: total(blogCounts), spark: dash.months.map((m) => m.blog) },
-  ]
+  const countsByKey: Record<EntityType, typeof officeCounts> = {
+    offices: officeCounts,
+    airlines: airlineCounts,
+    blog: blogCounts,
+  }
+
+  // Derived from ENTITY_META so the tiles share icon/accent/label with the rows.
+  const tiles = (Object.keys(ENTITY_META) as EntityType[]).map((key) => ({
+    key,
+    label: ENTITY_META[key].label,
+    href: `/admin/${key}`,
+    icon: ENTITY_META[key].icon,
+    accent: ENTITY_META[key].accent,
+    value: total(countsByKey[key]),
+    spark: dash.months.map((m) => m[key]),
+  }))
 
   const statusRows = [
     { label: 'Offices', counts: officeCounts },
@@ -157,7 +205,9 @@ export default async function AdminDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Publishing activity</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" /> Publishing activity
+              </CardTitle>
               <p className="text-sm text-muted-foreground">Items published over the last 6 months</p>
             </div>
             <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
@@ -172,7 +222,9 @@ export default async function AdminDashboard() {
         {/* Content status */}
         <Card>
           <CardHeader>
-            <CardTitle>Content status</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-muted-foreground" /> Content status
+            </CardTitle>
             <p className="text-sm text-muted-foreground">Live · scheduled · draft</p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -188,9 +240,11 @@ export default async function AdminDashboard() {
               </div>
             ))}
             <div className="flex items-center gap-4 border-t pt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: 'var(--primary)' }} /> Live</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-500" /> Scheduled</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Draft</span>
+              {STATUS_STYLES.map((s) => (
+                <span key={s.key} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ background: s.color }} /> {s.label}
+                </span>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -200,7 +254,9 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-muted-foreground" /> Recent activity
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-0.5">
             {activity.length === 0 && (
@@ -208,8 +264,8 @@ export default async function AdminDashboard() {
             )}
             {activity.map((item, i) => (
               <Link key={i} href={item.href} className="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm hover:bg-muted">
-                <span className="flex min-w-0 items-center gap-2">
-                  <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">{item.type}</span>
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <EntityTag type={item.type} />
                   <span className="truncate">{item.title}</span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
@@ -233,8 +289,8 @@ export default async function AdminDashboard() {
             )}
             {dash.upcoming.map((item, i) => (
               <Link key={i} href={item.href} className="flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm hover:bg-muted">
-                <span className="flex min-w-0 items-center gap-2">
-                  <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">{item.type}</span>
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <EntityTag type={item.type} />
                   <span className="truncate">{item.title}</span>
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">

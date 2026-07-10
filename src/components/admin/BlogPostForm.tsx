@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { saveBlogPost, autosaveBlogPost } from '@/app/admin/blog/actions'
 import PostEditor from '@/components/admin/PostEditor'
@@ -8,8 +8,11 @@ import ImagePicker from '@/components/admin/ImagePicker'
 import SubmitButton from '@/components/admin/SubmitButton'
 import StatusControl, { type ContentStatus } from '@/components/admin/StatusControl'
 import AutosaveIndicator from '@/components/admin/AutosaveIndicator'
+import SeoScoreIndicator from '@/components/admin/SeoScoreIndicator'
 import { generateSlug } from '@/lib/readingTime'
 import { useAutosave } from '@/lib/useAutosave'
+import { blogPreviewHref } from '@/lib/previewHref'
+import { scoreSeo } from '@/lib/seo/scoreSeo'
 import type { blogPosts } from '@/lib/schema'
 import type { CategoryWithCount } from '@/lib/data/getTaxonomy'
 
@@ -42,6 +45,18 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
   )
   const [tags, setTags] = useState<string[]>(initialTags)
   const [tagDraft, setTagDraft] = useState('')
+  const [noindex, setNoindex] = useState(!!initialData?.noindex)
+  const [ogImageId, setOgImageId] = useState(initialData?.ogImageId ?? '')
+  const [heroImageId, setHeroImageId] = useState(initialData?.heroImageId ?? '')
+
+  const seoResult = useMemo(() => scoreSeo({
+    metaTitle,
+    metaDescription,
+    slug,
+    contentText: content.replace(/<[^>]+>/g, ' '),
+    hasImage: !!(ogImageId || heroImageId),
+    noindex,
+  }), [metaTitle, metaDescription, slug, content, ogImageId, heroImageId, noindex])
 
   // WP-style tag entry: Enter or comma commits the chip; duplicates ignored.
   const commitTag = () => {
@@ -89,8 +104,9 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
     return saveBlogPost(formData)
   }
 
-  const inputCls = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-gray-900'
-  const labelCls = 'block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide'
+  // Token-based so the form matches the shadcn admin and adapts to dark mode.
+  const inputCls = 'w-full px-3 py-2 text-sm rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50'
+  const labelCls = 'block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide'
   const fieldCls = 'mb-5'
 
   const tabs = [
@@ -106,16 +122,26 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold tracking-tight">
             {mode === 'new' ? 'New Blog Post' : 'Edit Blog Post'}
           </h1>
           {mode === 'edit' && (
-            <p className="text-xs text-gray-400 font-mono mt-1">{slug}</p>
+            <p className="text-xs text-muted-foreground font-mono mt-1">{slug}</p>
           )}
         </div>
         <div className="flex items-center gap-3">
           {mode === 'edit' && <AutosaveIndicator status={autosaveStatus} />}
-          <Link href="/admin/blog" className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+          {mode === 'edit' && initialData && (
+            <a
+              href={blogPreviewHref(initialData.status, initialData.slug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+            >
+              Preview
+            </a>
+          )}
+          <Link href="/admin/blog" className="px-4 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors">
             Cancel
           </Link>
           <SubmitButton>{mode === 'new' ? 'Publish Post' : 'Save Changes'}</SubmitButton>
@@ -131,18 +157,18 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="Post title…"
-          className="w-full px-4 py-3 text-xl font-semibold border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-900 placeholder-gray-300"
+          className="w-full px-4 py-3 text-xl font-semibold rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
         />
       </div>
 
       {/* Status — Draft / Publish / Schedule */}
-      <div className="mb-6 p-4 border border-gray-200 rounded-xl bg-gray-50">
+      <div className="mb-6 p-4 border rounded-xl bg-muted/40">
         <label className={labelCls}>Status</label>
         <StatusControl status={status} scheduledAt={scheduledAt} onChange={(s, d) => { setStatus(s); setScheduledAt(d) }} />
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6 flex gap-1">
+      <div className="border-b mb-6 flex gap-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -150,8 +176,8 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.id
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -181,15 +207,15 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
         <div className={fieldCls}>
           <div className="flex items-center justify-between mb-3">
             <label className={labelCls}>FAQs</label>
-            <button type="button" onClick={addFaq} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+            <button type="button" onClick={addFaq} className="text-xs text-primary hover:opacity-80 font-medium">
               + Add FAQ
             </button>
           </div>
           <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+              <div key={i} className="border rounded-xl p-4 bg-muted/40">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-gray-500">FAQ #{i + 1}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">FAQ #{i + 1}</span>
                   {faqs.length > 1 && (
                     <button type="button" onClick={() => removeFaq(i)} className="text-xs text-red-400 hover:text-red-600">
                       Remove
@@ -218,6 +244,9 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
 
       {/* ── TAB: SEO ── */}
       <div className={activeTab === 'meta' ? '' : 'hidden'}>
+        <div className="mb-4 flex justify-end">
+          <SeoScoreIndicator result={seoResult} />
+        </div>
         <div className={fieldCls}>
           <label className={labelCls}>Meta Title</label>
           <input
@@ -228,7 +257,7 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
             placeholder="Top Safest Airlines to Fly in the US (2026)"
             className={inputCls}
           />
-          <p className={`mt-1 text-xs ${metaTitle.length > 60 ? 'text-red-500' : 'text-gray-400'}`}>
+          <p className={`mt-1 text-xs ${metaTitle.length > 60 ? 'text-destructive' : 'text-muted-foreground'}`}>
             {metaTitle.length}/60 characters
           </p>
         </div>
@@ -246,7 +275,7 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
         </div>
 
         <div className={`${fieldCls} mt-5`}>
-          <ImagePicker label="OG Image" name="ogImageId" initialId={initialData?.ogImageId} />
+          <ImagePicker label="OG Image" name="ogImageId" initialId={initialData?.ogImageId} onChange={setOgImageId} />
         </div>
 
         <div className={fieldCls}>
@@ -255,8 +284,8 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" name="noindex" value="true" defaultChecked={!!initialData?.noindex} className="w-4 h-4 accent-indigo-600" />
-          <span className="text-sm text-gray-700">Hide from search engines (noindex)</span>
+          <input type="checkbox" name="noindex" value="true" checked={noindex} onChange={(e) => setNoindex(e.target.checked)} className="w-4 h-4 accent-primary" />
+          <span className="text-sm text-foreground">Hide from search engines (noindex)</span>
         </label>
       </div>
 
@@ -273,15 +302,14 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
               onChange={(e) => setSlug(e.target.value)}
               placeholder="top-safest-airlines-2026"
               className={`${inputCls} font-mono`}
-              readOnly={isLive}
             />
-            {isLive && <p className="mt-1 text-xs text-amber-600">Slug is locked once live — this preserves your public URL.</p>}
+            {isLive && <p className="mt-1 text-xs text-amber-600">Changing this updates the live public URL — the old link will redirect automatically.</p>}
           </div>
 
           <div className={fieldCls}>
             <div className="flex items-center justify-between mb-1.5">
               <label className={labelCls.replace(' mb-1.5', '')}>Category</label>
-              <Link href="/admin/blog/categories" className="text-xs text-indigo-600 hover:text-indigo-700">
+              <Link href="/admin/blog/categories" className="text-xs text-primary hover:opacity-80">
                 Manage
               </Link>
             </div>
@@ -295,11 +323,11 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
 
           <div className={`${fieldCls} col-span-2`}>
             <label className={labelCls}>Tags</label>
-            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-indigo-500">
+            <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-2 py-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50">
               {tags.map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                   {tag}
-                  <button type="button" onClick={() => removeTag(tag)} className="text-indigo-400 hover:text-indigo-700" aria-label={`Remove tag ${tag}`}>
+                  <button type="button" onClick={() => removeTag(tag)} className="text-primary/60 hover:text-primary" aria-label={`Remove tag ${tag}`}>
                     ×
                   </button>
                 </span>
@@ -314,10 +342,10 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
                 }}
                 onBlur={commitTag}
                 placeholder={tags.length ? '' : 'Add tags — press Enter or comma…'}
-                className="min-w-32 flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-gray-900 focus:outline-none"
+                className="min-w-32 flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-foreground focus:outline-none"
               />
             </div>
-            <p className="mt-1 text-xs text-gray-400">New tags are created automatically on save.</p>
+            <p className="mt-1 text-xs text-muted-foreground">New tags are created automatically on save.</p>
           </div>
 
           <div className={fieldCls}>
@@ -332,7 +360,7 @@ export default function BlogPostForm({ mode, initialData, categories = [], initi
           </div>
 
           <div className={fieldCls}>
-            <ImagePicker label="Featured Image" name="heroImageId" initialId={initialData?.heroImageId} />
+            <ImagePicker label="Featured Image" name="heroImageId" initialId={initialData?.heroImageId} onChange={setHeroImageId} />
           </div>
         </div>
       </div>

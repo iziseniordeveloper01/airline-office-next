@@ -27,10 +27,10 @@ export default async function BlogPage() {
   return (
     <main className="bg-gray-50 min-h-screen">
       {/* Page Header */}
-      <div className="bg-indigo-700 text-white py-10">
+      <div className="bg-blue-800 text-white py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-1">Blog</h1>
-          <p className="text-indigo-200 text-sm">
+          <p className="text-blue-200 text-sm">
             Travel guides, airline tips, airport info & more
           </p>
         </div>

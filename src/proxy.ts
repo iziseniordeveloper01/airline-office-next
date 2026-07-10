@@ -21,10 +21,11 @@ export default function proxy(request: NextRequest) {
   const normalizedPathname = pathname.replace(/\/$/, '') || '/'
   const hasSessionCookie = !!getSessionCookie(request)
 
-  // Login page — agar already logged in hai toh dashboard pe bhejo
-  if (normalizedPathname === '/admin/login' && hasSessionCookie) {
-    return NextResponse.redirect(new URL('/admin/', request.url))
-  }
+  // NOTE: no cookie-based "already logged in" bounce away from /admin/login here.
+  // The cookie's presence doesn't prove the session is valid (expired/forged), and
+  // the admin layout now redirects invalid sessions TO the login page — a proxy
+  // bounce in the other direction would loop forever. The login page itself does
+  // the authoritative getSession() redirect for genuinely signed-in visitors.
 
   // Admin routes — login required
   if (normalizedPathname.startsWith('/admin') && normalizedPathname !== '/admin/login' && !hasSessionCookie) {

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
+  Bot,
   Building2,
   Globe,
   Hash,
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -28,7 +30,13 @@ interface FieldDef {
   help?: string
   full?: boolean
   textarea?: boolean
+  checkbox?: boolean
 }
+
+// Settings that post 'true' / '' rather than free text — driven by Checkbox
+// (controlled) instead of the uncontrolled Input/Textarea below, same
+// convention as OfficeForm's noindex field.
+const CHECKBOX_FIELDS = ['robotsDisallowAll', 'robotsBlockQueryStrings', 'indexNowEnabled'] as const satisfies readonly (keyof SiteSettings)[]
 
 interface Section {
   id: string
@@ -95,6 +103,43 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    id: 'robots',
+    title: 'Robots.txt',
+    icon: Bot,
+    description: '/admin/ is always blocked regardless of these settings.',
+    fields: [
+      {
+        name: 'robotsDisallowAll',
+        label: 'Discourage search engines from indexing this site',
+        help: 'Overrides every rule below with a site-wide Disallow. Use for staging only.',
+        checkbox: true,
+        full: true,
+      },
+      {
+        name: 'robotsBlockQueryStrings',
+        label: 'Block URLs with query strings (?...)',
+        help: 'Stops search/filter URL variants from being crawled as duplicate content.',
+        checkbox: true,
+        full: true,
+      },
+      {
+        name: 'robotsExtraDisallow',
+        label: 'Additional disallowed paths',
+        placeholder: '/some-path/\n/another-path/',
+        help: 'One path per line, must start with /. Appended to the generated robots.txt.',
+        full: true,
+        textarea: true,
+      },
+      {
+        name: 'indexNowEnabled',
+        label: 'Ping search engines instantly on publish (IndexNow)',
+        help: 'Notifies Bing and other IndexNow-enabled engines the moment a page is published or updated.',
+        checkbox: true,
+        full: true,
+      },
+    ],
+  },
+  {
     id: 'footer',
     title: 'Footer',
     icon: Globe,
@@ -106,6 +151,9 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [dirty, setDirty] = useState(false)
+  const [checkboxes, setCheckboxes] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(CHECKBOX_FIELDS.map((f) => [f, settings[f] === 'true']))
+  )
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -154,23 +202,45 @@ export default function SettingsForm({ settings }: { settings: SiteSettings }) {
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {section.fields.map((field) => (
                     <div key={field.name} className={`space-y-1.5 ${field.full ? 'sm:col-span-2' : ''}`}>
-                      <Label htmlFor={field.name}>{field.label}</Label>
-                      {field.textarea ? (
-                        <Textarea
-                          id={field.name}
-                          name={field.name}
-                          defaultValue={settings[field.name]}
-                          placeholder={field.placeholder}
-                          rows={3}
-                        />
+                      {field.checkbox ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={field.name}
+                              checked={checkboxes[field.name] ?? false}
+                              onCheckedChange={(v) => {
+                                setCheckboxes((prev) => ({ ...prev, [field.name]: !!v }))
+                                setDirty(true)
+                              }}
+                            />
+                            <Label htmlFor={field.name} className="font-normal">{field.label}</Label>
+                          </div>
+                          {/* onChange delegation on <form> only fires for native inputs the
+                              user interacts with directly — Radix's Checkbox isn't one, so
+                              the state's onCheckedChange above sets dirty explicitly instead. */}
+                          <input type="hidden" name={field.name} value={checkboxes[field.name] ? 'true' : ''} />
+                        </>
                       ) : (
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          type={field.type ?? 'text'}
-                          defaultValue={settings[field.name]}
-                          placeholder={field.placeholder}
-                        />
+                        <>
+                          <Label htmlFor={field.name}>{field.label}</Label>
+                          {field.textarea ? (
+                            <Textarea
+                              id={field.name}
+                              name={field.name}
+                              defaultValue={settings[field.name]}
+                              placeholder={field.placeholder}
+                              rows={3}
+                            />
+                          ) : (
+                            <Input
+                              id={field.name}
+                              name={field.name}
+                              type={field.type ?? 'text'}
+                              defaultValue={settings[field.name]}
+                              placeholder={field.placeholder}
+                            />
+                          )}
+                        </>
                       )}
                       {field.help && <p className="text-xs text-muted-foreground">{field.help}</p>}
                     </div>

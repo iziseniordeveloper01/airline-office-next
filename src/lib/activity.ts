@@ -10,7 +10,7 @@ export type ActivityAction =
   | 'published'
   | 'unpublished'
 
-export type ActivityEntity = 'office' | 'airline' | 'blog' | 'user' | 'settings' | 'media'
+export type ActivityEntity = 'office' | 'airline' | 'blog' | 'user' | 'settings' | 'media' | 'redirect'
 
 interface LogUser {
   id?: string | null

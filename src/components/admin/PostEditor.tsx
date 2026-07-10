@@ -33,14 +33,14 @@ function ToolbarButton({ onClick, active = false, disabled = false, title, child
   return (
     <button type="button" title={title} onClick={onClick} disabled={disabled}
       className={`p-1.5 rounded transition-colors disabled:opacity-30
-        ${active ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+        ${active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}>
       {children}
     </button>
   )
 }
 
 function ToolbarSeparator() {
-  return <span className="w-px h-4 bg-gray-300 mx-1" />
+  return <span className="w-px h-4 bg-border mx-1" />
 }
 
 export default function PostEditor({ value, onChange, placeholder }: PostEditorProps) {
@@ -124,8 +124,8 @@ export default function PostEditor({ value, onChange, placeholder }: PostEditorP
   }
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-gray-200">
+    <div className="border border-input rounded-lg overflow-hidden bg-background">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-muted/40 border-b">
         <ToolbarButton title="H2" active={editor.isActive('heading',{level:2})} onClick={() => editor.chain().focus().toggleHeading({level:2}).run()}><Heading2 size={15}/></ToolbarButton>
         <ToolbarButton title="H3" active={editor.isActive('heading',{level:3})} onClick={() => editor.chain().focus().toggleHeading({level:3}).run()}><Heading3 size={15}/></ToolbarButton>
         <ToolbarButton title="H4" active={editor.isActive('heading',{level:4})} onClick={() => editor.chain().focus().toggleHeading({level:4}).run()}><Heading4 size={15}/></ToolbarButton>

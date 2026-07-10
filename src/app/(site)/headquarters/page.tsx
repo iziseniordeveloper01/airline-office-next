@@ -24,10 +24,10 @@ export default async function HeadquartersPage() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <div className="bg-indigo-700 text-white py-10">
+      <div className="bg-blue-800 text-white py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-1">Airline Headquarters</h1>
-          <p className="text-indigo-200 text-sm">
+          <p className="text-blue-200 text-sm">
             Head office addresses and contact details for {withHq.length} airlines
           </p>
         </div>
@@ -52,7 +52,7 @@ export default async function HeadquartersPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                    <p className="font-semibold text-gray-900 group-hover:text-blue-800 transition-colors truncate">
                       {airline.name}
                     </p>
                     {airline.iataCode && (
@@ -64,22 +64,22 @@ export default async function HeadquartersPage() {
                 <div className="space-y-2 text-sm text-gray-600 border-t border-gray-100 pt-4">
                   {airline.hqAddress && (
                     <div className="flex items-start gap-2">
-                      <MapPin className="size-4 text-indigo-500 mt-0.5 shrink-0" />
+                      <MapPin className="size-4 text-blue-700 mt-0.5 shrink-0" />
                       <span>{airline.hqAddress}</span>
                     </div>
                   )}
                   {airline.hqPhone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="size-4 text-indigo-500 shrink-0" />
-                      <a href={`tel:${airline.hqPhone}`} className="hover:text-indigo-600 transition-colors">
+                      <Phone className="size-4 text-blue-700 shrink-0" />
+                      <a href={`tel:${airline.hqPhone}`} className="hover:text-blue-800 transition-colors">
                         {airline.hqPhone}
                       </a>
                     </div>
                   )}
                   {airline.hqEmail && (
                     <div className="flex items-center gap-2">
-                      <Mail className="size-4 text-indigo-500 shrink-0" />
-                      <a href={`mailto:${airline.hqEmail}`} className="hover:text-indigo-600 transition-colors break-all">
+                      <Mail className="size-4 text-blue-700 shrink-0" />
+                      <a href={`mailto:${airline.hqEmail}`} className="hover:text-blue-800 transition-colors break-all">
                         {airline.hqEmail}
                       </a>
                     </div>
@@ -88,7 +88,7 @@ export default async function HeadquartersPage() {
 
                 <Link
                   href={`/${airline.slug}/`}
-                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+                  className="text-sm text-blue-800 hover:text-blue-900 font-medium hover:underline transition-colors"
                 >
                   View all {airline.name} offices →
                 </Link>

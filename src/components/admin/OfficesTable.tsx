@@ -13,6 +13,7 @@ import { ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink, Pencil, Plus, Sea
 import { trashOffice, bulkTrashOffices } from '@/app/admin/offices/actions'
 import StatusBadge from '@/components/admin/StatusBadge'
 import ConfirmButton from '@/components/admin/ConfirmButton'
+import { officePreviewHref } from '@/lib/previewHref'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -149,7 +150,7 @@ export default function OfficesTable({ rows, total, page, pageSize, airlines, qu
         return (
           <div className="flex justify-end gap-1">
             <Button asChild variant="ghost" size="icon-sm">
-              <a href={`/${office.airlineSlug}/${office.slug}/`} target="_blank" rel="noopener noreferrer" title="Preview">
+              <a href={officePreviewHref(office.status, office.airlineSlug, office.slug)} target="_blank" rel="noopener noreferrer" title="Preview">
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>

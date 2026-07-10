@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/auth'
 import { type Role } from '@/types'
 
-const HIERARCHY: Record<Role, number> = {
+export const HIERARCHY: Record<Role, number> = {
   editor: 1,
   admin: 2,
   super_admin: 3,

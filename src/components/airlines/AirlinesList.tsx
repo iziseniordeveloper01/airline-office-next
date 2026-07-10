@@ -49,7 +49,7 @@ export default function AirlinesList({ airlines }: { airlines: AirlineIndex[] })
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search airline name or IATA code…"
-            className="w-full rounded-full border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            className="w-full rounded-full border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/40"
           />
           {query && (
             <button
@@ -77,7 +77,7 @@ export default function AirlinesList({ airlines }: { airlines: AirlineIndex[] })
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-blue-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
           >
             <X className="size-4" />
             Clear search
@@ -89,7 +89,7 @@ export default function AirlinesList({ airlines }: { airlines: AirlineIndex[] })
             <Link
               key={airline.slug}
               href={`/${airline.slug}/`}
-              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-[color,border-color,box-shadow]"
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-[color,border-color,box-shadow]"
             >
               <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
                 {airline.logo ? (

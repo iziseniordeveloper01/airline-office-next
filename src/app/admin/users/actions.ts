@@ -3,10 +3,29 @@
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { z } from 'zod'
+import { eq } from 'drizzle-orm'
 import { auth } from '@/auth'
-import { requireRole } from '@/lib/auth/requireRole'
+import { db } from '@/lib/db'
+import { users } from '@/lib/schema'
+import { requireRole, HIERARCHY } from '@/lib/auth/requireRole'
 import { logActivity } from '@/lib/activity'
 import { type Role } from '@/types'
+
+// A user may only act on accounts strictly BELOW their own role — an admin can
+// never demote/ban a super_admin (or a fellow admin), and nobody can act on
+// themselves through these actions. Role-name checks on the *requested* role
+// alone don't cover this: the dangerous input is the target user.
+async function assertOutranksTarget(actor: { id: string; role?: string | null }, targetUserId: string) {
+  if (actor.id === targetUserId) throw new Error('You cannot modify your own account here')
+  const [target] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, targetUserId))
+  if (!target) throw new Error('User not found')
+  const actorRank = HIERARCHY[actor.role as Role] ?? 0
+  const targetRank = HIERARCHY[(target.role ?? 'editor') as Role] ?? 0
+  if (targetRank >= actorRank) throw new Error('You cannot modify a user with an equal or higher role')
+}
 
 const createUserSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -41,6 +60,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
   const role = roleSchema.parse(newRole)
   if (role === 'super_admin') throw new Error('Cannot assign super_admin role')
   if (role === 'admin' && session.user.role !== 'super_admin') throw new Error('Only super_admin can assign admin')
+  await assertOutranksTarget(session.user, userId)
 
   await auth.api.setRole({
     headers: await headers(),
@@ -52,6 +72,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
 
 export async function banUser(userId: string) {
   const session = await requireRole('admin')
+  await assertOutranksTarget(session.user, userId)
   await auth.api.banUser({
     headers: await headers(),
     body: { userId: z.string().min(1).parse(userId) },
@@ -62,6 +83,7 @@ export async function banUser(userId: string) {
 
 export async function unbanUser(userId: string) {
   const session = await requireRole('admin')
+  await assertOutranksTarget(session.user, userId)
   await auth.api.unbanUser({
     headers: await headers(),
     body: { userId: z.string().min(1).parse(userId) },

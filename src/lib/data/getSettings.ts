@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { db } from '@/lib/db'
 import { settings as settingsTable } from '@/lib/schema'
+import { cachedRead, CACHE_TAGS } from '@/lib/cache'
 
 // Site-wide, admin-editable settings. Field names double as the DB keys in the
 // `settings` key/value table. Defaults mirror the values that used to be
@@ -23,6 +24,15 @@ export interface SiteSettings {
   metaDescription: string
   googleSiteVerification: string
   bingSiteVerification: string
+  robotsDisallowAll: string
+  robotsBlockQueryStrings: string
+  robotsExtraDisallow: string
+  indexNowEnabled: string
+  // System-generated, not part of settingsSchema/SettingsForm — see
+  // getOrCreateIndexNowKey() in lib/indexnow.ts. Present here only so
+  // getSettings() (the one cached DB read every setting goes through) can
+  // surface it without a second query.
+  indexNowKey: string
 }
 
 export const SETTINGS_DEFAULTS: SiteSettings = {
@@ -43,24 +53,19 @@ export const SETTINGS_DEFAULTS: SiteSettings = {
     'Search verified airline office addresses, phone numbers, working hours and headquarters information for 500+ airlines across 120+ countries.',
   googleSiteVerification: '',
   bingSiteVerification: '',
+  robotsDisallowAll: '',
+  robotsBlockQueryStrings: '',
+  robotsExtraDisallow: '',
+  indexNowEnabled: '',
+  indexNowKey: '',
 }
 
 export const SETTINGS_FIELDS = Object.keys(SETTINGS_DEFAULTS) as (keyof SiteSettings)[]
 
-async function readSettings(): Promise<SiteSettings> {
-  let rows: { key: string; value: string | null }[]
-  try {
-    rows = await db.select().from(settingsTable)
-  } catch (err) {
-    // The DB is unreachable during `next build` on Railway — the private
-    // `*.railway.internal` host only resolves at runtime, so any page whose
-    // metadata reads settings (e.g. the prerendered /_not-found) would crash the
-    // build. Fall back to defaults instead: the values are baked into static/ISR
-    // pages and refreshed on the first request once the DB is reachable. This
-    // also keeps the site serving (with defaults) through a transient DB outage.
-    console.warn('[getSettings] DB read failed, using defaults:', (err as Error).message)
-    return { ...SETTINGS_DEFAULTS }
-  }
+// The DB read + merge. Throws on DB failure (never returns defaults) so the
+// persistent cache below can't store the fallback during a build/outage.
+async function readSettingsFromDb(): Promise<SiteSettings> {
+  const rows = await db.select().from(settingsTable)
   const stored = new Map(rows.map((r) => [r.key, r.value]))
   const result = { ...SETTINGS_DEFAULTS }
   for (const field of SETTINGS_FIELDS) {
@@ -71,8 +76,24 @@ async function readSettings(): Promise<SiteSettings> {
   return result
 }
 
+// Cross-request cache; read on every page via the layouts and metadata, so this
+// is one of the hottest reads. Busted by the settings tag when an admin saves.
+const cachedSettings = cachedRead(readSettingsFromDb, ['settings:all'], [CACHE_TAGS.settings])
+
+async function readSettings(): Promise<SiteSettings> {
+  try {
+    return await cachedSettings()
+  } catch (err) {
+    // The DB is unreachable during `next build` on Railway — the private
+    // `*.railway.internal` host only resolves at runtime, so any page whose
+    // metadata reads settings (e.g. the prerendered /_not-found) would crash the
+    // build. Fall back to defaults instead (kept outside the cache so the
+    // fallback is never persisted); real values fill in on the first request.
+    console.warn('[getSettings] DB read failed, using defaults:', (err as Error).message)
+    return { ...SETTINGS_DEFAULTS }
+  }
+}
+
 // React cache() dedupes the read within a single render (root layout, site
-// layout, and hero components all call it). The values are baked into each
-// static/ISR page; the save action calls revalidatePath('/', 'layout') to
-// refresh them site-wide.
+// layout, and hero components all call it).
 export const getSettings = cache(readSettings)

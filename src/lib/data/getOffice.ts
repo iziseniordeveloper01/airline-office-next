@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { airlines, offices, officeFaqs } from '@/lib/schema'
 import { imageUrl } from '@/lib/images'
 import { isPubliclyVisible, notTrashed } from '@/lib/visibility'
+import { cachedRead, CACHE_TAGS } from '@/lib/cache'
 import type { Office } from '@/types'
 
 export interface StatusCounts {
@@ -80,7 +81,15 @@ async function getFaqsForOffices(officeIds: number[]) {
   return map
 }
 
-export async function getOffice(
+// Cross-request cached — office detail is the most-visited page type. Keyed by
+// (airlineSlug, officeSlug); busted by the office `offices` tag on any save.
+export const getOffice = cachedRead(
+  readOffice,
+  ['office:by-slug'],
+  [CACHE_TAGS.offices]
+)
+
+async function readOffice(
   airlineSlug: string,
   officeSlug: string
 ): Promise<Office | null> {
@@ -96,7 +105,31 @@ export async function getOffice(
   return mapOffice(office, airline.slug, airline.name, faqMap.get(office.id) ?? [])
 }
 
-export async function getOfficesByAirline(airlineSlug: string): Promise<Office[]> {
+// Admin/draft-preview only — see getAirlineForPreview in getAirline.ts for the
+// caching/security rationale (identical here: uncached, notTrashed only).
+export async function getOfficeForPreview(
+  airlineSlug: string,
+  officeSlug: string
+): Promise<Office | null> {
+  const airline = await db.query.airlines.findFirst({ where: eq(airlines.slug, airlineSlug) })
+  if (!airline) return null
+
+  const office = await db.query.offices.findFirst({
+    where: and(eq(offices.airlineId, airline.id), eq(offices.slug, officeSlug), notTrashed(offices)),
+  })
+  if (!office) return null
+
+  const faqMap = await getFaqsForOffices([office.id])
+  return mapOffice(office, airline.slug, airline.name, faqMap.get(office.id) ?? [])
+}
+
+export const getOfficesByAirline = cachedRead(
+  readOfficesByAirline,
+  ['offices:by-airline'],
+  [CACHE_TAGS.offices]
+)
+
+async function readOfficesByAirline(airlineSlug: string): Promise<Office[]> {
   const airline = await db.query.airlines.findFirst({ where: eq(airlines.slug, airlineSlug) })
   if (!airline) return []
 
@@ -112,13 +145,21 @@ export interface OfficePath {
   airlineSlug: string
   slug: string
   updatedAt: string
+  noindex: boolean
 }
 
-export async function getAllOfficePaths(): Promise<OfficePath[]> {
+export const getAllOfficePaths = cachedRead(
+  readAllOfficePaths,
+  ['offices:all-paths'],
+  [CACHE_TAGS.offices]
+)
+
+async function readAllOfficePaths(): Promise<OfficePath[]> {
   const rows = await db.select({
     slug: offices.slug,
     updatedAt: offices.updatedAt,
     airlineSlug: airlines.slug,
+    noindex: offices.noindex,
   })
     .from(offices)
     .innerJoin(airlines, eq(offices.airlineId, airlines.id))
@@ -128,6 +169,7 @@ export async function getAllOfficePaths(): Promise<OfficePath[]> {
     airlineSlug: o.airlineSlug,
     slug: o.slug,
     updatedAt: o.updatedAt?.toISOString() ?? '',
+    noindex: !!o.noindex,
   }))
 }
 

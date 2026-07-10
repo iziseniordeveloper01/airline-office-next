@@ -33,11 +33,11 @@ export default async function BlogCategoryPage({ params }: Props) {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-      <div className="bg-indigo-700 text-white py-10">
+      <div className="bg-blue-800 text-white py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wide mb-1">Category</p>
+          <p className="text-blue-200 text-xs font-semibold uppercase tracking-wide mb-1">Category</p>
           <h1 className="text-3xl font-bold mb-1">{data.category.name}</h1>
-          <p className="text-indigo-200 text-sm">
+          <p className="text-blue-200 text-sm">
             {data.category.description || `${data.posts.length} article${data.posts.length === 1 ? '' : 's'}`}
           </p>
         </div>
@@ -48,7 +48,7 @@ export default async function BlogCategoryPage({ params }: Props) {
           <div className="flex-1 min-w-0">
             <PostGrid posts={data.posts} emptyMessage="No posts in this category yet." />
             <div className="mt-8">
-              <Link href="/blog/" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+              <Link href="/blog/" className="text-sm font-medium text-blue-800 hover:text-blue-900">
                 ← All posts
               </Link>
             </div>

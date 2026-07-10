@@ -300,6 +300,18 @@ export const settings = mysqlTable('settings', {
   updatedBy: varchar('updated_by', { length: 36 }).references(() => users.id),
 })
 
+// ── REDIRECTS ─────────────────────────────────────────────────────────
+// Recorded whenever a live airline/office/blog slug changes, so an old public
+// URL 308s to its new location instead of 404ing (see src/lib/redirects.ts).
+// Paths are globally unambiguous (/blog/x vs /airline vs /airline/office), so
+// one fromPath -> toPath row covers all three entity types without a type column.
+export const redirects = mysqlTable('redirects', {
+  id:        int('id').autoincrement().primaryKey(),
+  fromPath:  varchar('from_path', { length: 300 }).notNull().unique(),
+  toPath:    varchar('to_path', { length: 300 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
 // ── ACTIVITY LOG ──────────────────────────────────────────────────────
 // Append-only audit trail for admin mutations. userName is a denormalized
 // snapshot so entries stay readable after a user is renamed or deleted

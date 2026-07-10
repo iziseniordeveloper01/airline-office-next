@@ -23,6 +23,13 @@ export const settingsSchema = z.object({
   metaDescription: optionalStr(500),
   googleSiteVerification: optionalStr(255),
   bingSiteVerification: optionalStr(255),
+  // Checkboxes post 'true' or '' via a hidden input (see OfficeForm's noindex
+  // field for the same convention) — kept as plain strings like every other
+  // setting rather than z.boolean() since FormData values are always strings.
+  robotsDisallowAll: optionalStr(10),
+  robotsBlockQueryStrings: optionalStr(10),
+  robotsExtraDisallow: optionalStr(1000),
+  indexNowEnabled: optionalStr(10),
 })
 
 export type SettingsInput = z.infer<typeof settingsSchema>

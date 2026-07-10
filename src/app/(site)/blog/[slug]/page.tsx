@@ -1,10 +1,14 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { getBlogPost, getRelatedPosts } from '@/lib/data/getBlog'
+import { getBlogPost, getBlogPostForPreview, getRelatedPosts } from '@/lib/data/getBlog'
 import { getSidebarData } from '@/lib/data/getSidebar'
+import { canPreviewDrafts } from '@/lib/draftPreview'
+import { getRedirectTarget } from '@/lib/redirects'
 import { formatDate } from '@/lib/datetime'
+import { jsonLd as toJsonLd } from '@/lib/utils'
+import Breadcrumb from '@/components/layout/Breadcrumb'
 import BlogSidebar from '@/components/blog/BlogSidebar'
 import BlogFAQ from '@/components/blog/BlogFAQ'
 import RelatedPosts from '@/components/blog/RelatedPosts'
@@ -18,7 +22,8 @@ export const dynamic = 'force-dynamic'
 // Dynamic SEO metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const post = await getBlogPost(slug)
+  let post = await getBlogPost(slug)
+  if (!post && (await canPreviewDrafts())) post = await getBlogPostForPreview(slug)
   if (!post) return { title: 'Not Found' }
 
   const title = post.metaTitle || post.title
@@ -44,12 +49,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
 
-  const [post, sidebarData] = await Promise.all([
+  const [postResult, sidebarData] = await Promise.all([
     getBlogPost(slug),
     getSidebarData(),
   ])
 
-  if (!post) notFound()
+  const post = postResult ?? ((await canPreviewDrafts()) ? await getBlogPostForPreview(slug) : null)
+  if (!post) {
+    const target = await getRedirectTarget(`/blog/${slug}`)
+    if (target) permanentRedirect(target)
+    notFound()
+  }
 
   // Related posts fetch karo
   const relatedPosts = await getRelatedPosts(post.relatedPosts || [])
@@ -79,12 +89,12 @@ export default async function BlogPostPage({ params }: Props) {
       {/* Article SEO Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }}
       />
 
       <div className="bg-gray-50 min-h-screen">
         {/* ── Hero / Featured Image ── */}
-        <div className="relative w-full h-64 md:h-80 bg-indigo-900 overflow-hidden">
+        <div className="relative w-full h-64 md:h-80 bg-blue-950 overflow-hidden">
           {post.featuredImage && (
             <Image
               src={post.featuredImage}
@@ -98,17 +108,15 @@ export default async function BlogPostPage({ params }: Props) {
           {/* Title Overlay */}
           <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 h-full flex flex-col justify-end pb-8">
             {/* Breadcrumb */}
-            <nav className="text-indigo-200 text-sm mb-3 flex items-center gap-1.5">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span>›</span>
-              <Link href="/blog/" className="hover:text-white transition-colors">
-                Blog
-              </Link>
-              <span>›</span>
-              <span className="text-white truncate max-w-xs">{post.title}</span>
-            </nav>
+            <Breadcrumb
+              tone="dark"
+              className="mb-3"
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Blog', href: '/blog/' },
+                { label: post.title },
+              ]}
+            />
             <h1 className="text-white text-2xl md:text-3xl font-bold leading-tight max-w-3xl">
               {post.title}
             </h1>
@@ -125,7 +133,7 @@ export default async function BlogPostPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-4 mb-6 pb-6 border-b border-gray-200">
                 {/* Author */}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
+                  <div className="w-8 h-8 rounded-full bg-blue-800 text-white flex items-center justify-center text-sm font-bold">
                     {post.author[0]}
                   </div>
                   <span className="text-sm font-medium text-gray-700">
@@ -156,13 +164,13 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.categorySlug ? (
                   <Link
                     href={`/blog/category/${post.categorySlug}/`}
-                    className="ml-auto bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1 rounded-full hover:bg-indigo-100 transition-colors"
+                    className="ml-auto bg-blue-50 text-blue-800 text-xs font-medium px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
                   >
                     {post.category}
                   </Link>
                 ) : (
                   post.category && (
-                    <span className="ml-auto bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="ml-auto bg-blue-50 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
                       {post.category}
                     </span>
                   )
@@ -183,7 +191,7 @@ export default async function BlogPostPage({ params }: Props) {
                     <Link
                       key={tag.slug}
                       href={`/blog/tag/${tag.slug}/`}
-                      className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                      className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                     >
                       #{tag.name}
                     </Link>

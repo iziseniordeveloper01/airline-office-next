@@ -11,12 +11,22 @@ import { cleanHtml } from '@/lib/sanitize'
 import { ensureUniqueSlug } from '@/lib/slug'
 import { deleteReplacedImage } from '@/lib/images'
 import { isCurrentlyLive } from '@/lib/visibility'
+import { recordRedirect } from '@/lib/redirects'
+import { pingIndexNow } from '@/lib/indexnow'
 import { resolveStatusFields } from '@/lib/validation/content'
+import { officeServerSchema } from '@/lib/validation/office'
+import { safeUrl, safeMapEmbedUrl, parseFaqs } from '@/lib/validation/urls'
+import { bustTags, CACHE_TAGS } from '@/lib/cache'
 import { logActivity } from '@/lib/activity'
 
 const idsSchema = z.array(z.number().int().positive()).min(1)
 
 async function revalidateOfficePaths(airlineId: number, slug: string) {
+  // Bust the data-cache tags first: office pages read the `offices` tag, and the
+  // homepage/hub read `airlines` (getAllAirlines carries per-airline officeCount,
+  // which a create/delete changes). Then the path revalidation below covers any
+  // fully-cached routes.
+  bustTags(CACHE_TAGS.offices, CACHE_TAGS.airlines)
   revalidatePath('/admin/offices')
   revalidatePath('/')
   const [airline] = await db.select({ slug: airlines.slug }).from(airlines).where(eq(airlines.id, airlineId))
@@ -29,7 +39,11 @@ async function revalidateOfficePaths(airlineId: number, slug: string) {
 export async function saveOffice(formData: FormData) {
   const session = await requireRole('editor')
   const raw = Object.fromEntries(formData)
-  const airlineId = parseInt(raw.airlineId as string)
+
+  // Server-side validation of required fields — the browser RHF schema doesn't
+  // protect a tampered/direct POST. Throws a clean message on bad input.
+  const core = officeServerSchema.parse(raw)
+  const airlineId = core.airlineId
   const officeId = raw.id ? parseInt(raw.id as string) : null
 
   const existing = officeId
@@ -43,21 +57,18 @@ export async function saveOffice(formData: FormData) {
       }).from(offices).where(eq(offices.id, officeId)))[0] ?? null
     : null
 
-  // A live row's slug never changes from here — even if the request was tampered
-  // with client-side — to avoid silently 404ing an indexed public URL.
-  const locked = existing ? isCurrentlyLive(existing) : false
-  const slug = locked
-    ? existing!.slug
-    : await ensureUniqueSlug(raw.slug as string, async (candidate) => {
-        const rows = await db.select({ id: offices.id }).from(offices).where(
-          and(
-            eq(offices.airlineId, airlineId),
-            eq(offices.slug, candidate),
-            officeId ? ne(offices.id, officeId) : undefined
-          )
-        )
-        return rows.length > 0
-      })
+  // Slug is editable at any time, live or not (any role) — a rename records a
+  // redirect below instead of being blocked, so the old public URL keeps working.
+  const slug = await ensureUniqueSlug(raw.slug as string, async (candidate) => {
+    const rows = await db.select({ id: offices.id }).from(offices).where(
+      and(
+        eq(offices.airlineId, airlineId),
+        eq(offices.slug, candidate),
+        officeId ? ne(offices.id, officeId) : undefined
+      )
+    )
+    return rows.length > 0
+  })
 
   const { status, scheduledAt, publishedAt } = resolveStatusFields(
     { status: raw.status as string, scheduledAt: (raw.scheduledAt as string) || null },
@@ -67,13 +78,14 @@ export async function saveOffice(formData: FormData) {
   const officeData = {
     slug,
     airlineId,
-    fullTitle:      raw.fullTitle as string,
-    city:           raw.city as string,
-    country:        raw.country as string,
+    fullTitle:      core.fullTitle,
+    city:           core.city,
+    country:        core.country,
     countryCode:    (raw.countryCode as string) || null,
     region:         (raw.region as string) || null,
     address:        (raw.address as string) || null,
-    mapEmbedUrl:    (raw.mapEmbedUrl as string) || null,
+    // Restricted to Google Maps embed URLs — rendered directly into iframe src.
+    mapEmbedUrl:    safeMapEmbedUrl(raw.mapEmbedUrl),
     mapLat:         raw.mapLat ? raw.mapLat as string : null,
     mapLng:         raw.mapLng ? raw.mapLng as string : null,
     phone:          (raw.phone as string) || null,
@@ -81,22 +93,23 @@ export async function saveOffice(formData: FormData) {
     email:          (raw.email as string) || null,
     workingHours:   (raw.workingHours as string) || null,
     workingDays:    (raw.workingDays as string) || null,
-    website:        (raw.website as string) || null,
-    onlineCheckin:  (raw.onlineCheckin as string) || null,
-    flightStatus:   (raw.flightStatus as string) || null,
-    baggageInfo:    (raw.baggageInfo as string) || null,
+    // URL fields rendered into public href/src — scheme-validated (no javascript:).
+    website:        safeUrl(raw.website),
+    onlineCheckin:  safeUrl(raw.onlineCheckin),
+    flightStatus:   safeUrl(raw.flightStatus),
+    baggageInfo:    safeUrl(raw.baggageInfo),
     isHeadquarters: raw.isHeadquarters === 'true',
     heroImageId:    (raw.heroImageId as string) || null,
     ogImageId:      (raw.ogImageId as string) || null,
-    facebook:       (raw.facebook as string) || null,
-    twitter:        (raw.twitter as string) || null,
-    instagram:      (raw.instagram as string) || null,
-    youtube:        (raw.youtube as string) || null,
-    linkedin:       (raw.linkedin as string) || null,
+    facebook:       safeUrl(raw.facebook),
+    twitter:        safeUrl(raw.twitter),
+    instagram:      safeUrl(raw.instagram),
+    youtube:        safeUrl(raw.youtube),
+    linkedin:       safeUrl(raw.linkedin),
     content:        cleanHtml(raw.content as string),
     metaTitle:      (raw.metaTitle as string) || null,
     metaDescription:(raw.metaDescription as string) || null,
-    canonicalUrl:   (raw.canonicalUrl as string) || null,
+    canonicalUrl:   safeUrl(raw.canonicalUrl),
     noindex:        raw.noindex === 'true',
     isFeatured:     raw.isFeatured === 'true',
     status,
@@ -108,36 +121,48 @@ export async function saveOffice(formData: FormData) {
     updatedBy:      session.user.id,
   }
 
-  let resolvedOfficeId: number
+  // Validated + bounded FAQ list (drops malformed/empty entries; caps count).
+  const faqs = parseFaqs(raw.faqs)
 
+  // The row write and its FAQ rewrite are one atomic unit — a mid-way failure
+  // must never leave the office updated but its FAQs deleted (data loss).
+  let resolvedOfficeId: number = officeId ?? 0
+
+  await db.transaction(async (tx) => {
+    if (officeId) {
+      await tx.update(offices).set(officeData).where(eq(offices.id, officeId))
+      await tx.delete(officeFaqs).where(eq(officeFaqs.officeId, officeId))
+    } else {
+      const [result] = await tx.insert(offices).values(officeData)
+      resolvedOfficeId = result.insertId
+    }
+
+    if (faqs.length > 0) {
+      await tx.insert(officeFaqs).values(
+        faqs.map((faq, i) => ({ officeId: resolvedOfficeId, question: faq.question, answer: faq.answer, sortOrder: i }))
+      )
+    }
+  })
+
+  // Orphaned-image cleanup runs after the transaction commits — it deletes rows
+  // in a different table and must not roll the content write back if it fails.
   if (officeId) {
-    resolvedOfficeId = officeId
-
-    await db.update(offices).set(officeData).where(eq(offices.id, officeId))
-    await db.delete(officeFaqs).where(eq(officeFaqs.officeId, officeId))
-
     await Promise.all([
       deleteReplacedImage(existing?.heroImageId, officeData.heroImageId),
       deleteReplacedImage(existing?.ogImageId, officeData.ogImageId),
     ])
-  } else {
-    const [result] = await db.insert(offices).values(officeData)
-    resolvedOfficeId = result.insertId
   }
 
-  // FAQs — sent as JSON string in formData
-  const faqsRaw = raw.faqs as string
-  if (faqsRaw) {
-    const faqs: Array<{ question: string; answer: string }> = JSON.parse(faqsRaw)
-    if (faqs.length > 0) {
-      await db.insert(officeFaqs).values(
-        faqs.map((faq, i) => ({ officeId: resolvedOfficeId, question: faq.question, answer: faq.answer, sortOrder: i }))
-      )
-    }
+  const [al] = await db.select({ slug: airlines.slug }).from(airlines).where(eq(airlines.id, airlineId))
+  if (existing && existing.slug !== slug && al) {
+    await recordRedirect(`/${al.slug}/${existing.slug}`, `/${al.slug}/${slug}`)
+  }
+
+  if (status === 'published' && al) {
+    await pingIndexNow([`${process.env.NEXT_PUBLIC_SITE_URL}/${al.slug}/${slug}/`])
   }
 
   await revalidateOfficePaths(airlineId, slug)
-  const [al] = await db.select({ slug: airlines.slug }).from(airlines).where(eq(airlines.id, airlineId))
   await logActivity(session.user, {
     action: officeId ? 'updated' : 'created',
     entityType: 'office',
@@ -199,6 +224,7 @@ export async function deleteOfficePermanently(id: number) {
   const [office] = await db.select({ slug: offices.slug, airlineId: offices.airlineId, fullTitle: offices.fullTitle }).from(offices).where(eq(offices.id, id))
   await db.delete(offices).where(eq(offices.id, id))
   await logActivity(session.user, { action: 'deleted', entityType: 'office', entityId: id, entityTitle: office?.fullTitle ?? null })
+  bustTags(CACHE_TAGS.offices, CACHE_TAGS.airlines)
   revalidatePath('/admin/offices')
   revalidatePath('/admin/offices/trash')
   if (office) {

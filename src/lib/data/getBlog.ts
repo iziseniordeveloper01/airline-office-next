@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { blogPosts, blogFaqs, blogCategories, blogTags, blogPostTags } from '@/lib/schema'
 import { imageUrl } from '@/lib/images'
 import { isPubliclyVisible, notTrashed } from '@/lib/visibility'
+import { cachedRead, CACHE_TAGS } from '@/lib/cache'
 import type { BlogPost, BlogPostIndex } from '@/types'
 
 export interface StatusCounts {
@@ -26,11 +27,18 @@ function mapIndex(p: typeof blogPosts.$inferSelect): BlogPostIndex {
     publishedAt: (p.publishedAt ?? p.scheduledAt)?.toISOString() ?? '',
     updatedAt: p.updatedAt?.toISOString() ?? '',
     readingTime: p.readingTime ?? '',
+    noindex: !!p.noindex,
   }
 }
 
 // Blog listing page ke liye — sirf published posts, newest first
-export async function getAllBlogPosts(): Promise<BlogPostIndex[]> {
+export const getAllBlogPosts = cachedRead(
+  readAllBlogPosts,
+  ['blog:all'],
+  [CACHE_TAGS.blog]
+)
+
+async function readAllBlogPosts(): Promise<BlogPostIndex[]> {
   const rows = await db.query.blogPosts.findMany({
     where: isPubliclyVisible(blogPosts),
     orderBy: (b, { desc }) => [desc(sql`COALESCE(${b.publishedAt}, ${b.scheduledAt})`)],
@@ -39,12 +47,27 @@ export async function getAllBlogPosts(): Promise<BlogPostIndex[]> {
 }
 
 // Single post detail
-export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+export const getBlogPost = cachedRead(readBlogPost, ['blog:by-slug'], [CACHE_TAGS.blog])
+
+async function readBlogPost(slug: string): Promise<BlogPost | null> {
   const post = await db.query.blogPosts.findFirst({
     where: and(eq(blogPosts.slug, slug), isPubliclyVisible(blogPosts)),
   })
   if (!post) return null
+  return hydrateBlogPost(post)
+}
 
+// Admin/draft-preview only — see getAirlineForPreview in getAirline.ts for the
+// caching/security rationale (identical here: uncached, notTrashed only).
+export async function getBlogPostForPreview(slug: string): Promise<BlogPost | null> {
+  const post = await db.query.blogPosts.findFirst({
+    where: and(eq(blogPosts.slug, slug), notTrashed(blogPosts)),
+  })
+  if (!post) return null
+  return hydrateBlogPost(post)
+}
+
+async function hydrateBlogPost(post: typeof blogPosts.$inferSelect): Promise<BlogPost> {
   const [faqs, tags, category] = await Promise.all([
     db.select().from(blogFaqs)
       .where(eq(blogFaqs.postId, post.id))
@@ -76,7 +99,13 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 }
 
 // Category archive — /blog/category/[slug]/
-export async function getPostsByCategorySlug(slug: string): Promise<
+export const getPostsByCategorySlug = cachedRead(
+  readPostsByCategorySlug,
+  ['blog:by-category'],
+  [CACHE_TAGS.blog, CACHE_TAGS.taxonomy]
+)
+
+async function readPostsByCategorySlug(slug: string): Promise<
   { category: { name: string; slug: string; description: string | null }; posts: BlogPostIndex[] } | null
 > {
   const [category] = await db.select({
@@ -92,7 +121,13 @@ export async function getPostsByCategorySlug(slug: string): Promise<
 }
 
 // Tag archive — /blog/tag/[slug]/
-export async function getPostsByTagSlug(slug: string): Promise<
+export const getPostsByTagSlug = cachedRead(
+  readPostsByTagSlug,
+  ['blog:by-tag'],
+  [CACHE_TAGS.blog, CACHE_TAGS.taxonomy]
+)
+
+async function readPostsByTagSlug(slug: string): Promise<
   { tag: { name: string; slug: string }; posts: BlogPostIndex[] } | null
 > {
   const [tag] = await db.select({ id: blogTags.id, name: blogTags.name, slug: blogTags.slug })
@@ -112,14 +147,16 @@ export async function getPostsByTagSlug(slug: string): Promise<
 
 // Sitemap + generateStaticParams ke liye
 export async function getAllBlogSlugs(): Promise<
-  { slug: string; updatedAt: string }[]
+  { slug: string; updatedAt: string; noindex: boolean }[]
 > {
   const posts = await getAllBlogPosts()
-  return posts.map((p) => ({ slug: p.slug, updatedAt: p.updatedAt }))
+  return posts.map((p) => ({ slug: p.slug, updatedAt: p.updatedAt, noindex: p.noindex }))
 }
 
 // Related posts fetch karo (slugs array se)
-export async function getRelatedPosts(
+export const getRelatedPosts = cachedRead(readRelatedPosts, ['blog:related'], [CACHE_TAGS.blog])
+
+async function readRelatedPosts(
   slugs: string[]
 ): Promise<BlogPostIndex[]> {
   if (!slugs.length) return []

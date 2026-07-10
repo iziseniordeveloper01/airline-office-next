@@ -40,7 +40,7 @@ export default function Navbar({ tagline, phone }: Props) {
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-2 flex items-center justify-between text-xs">
           <p>{tagline}</p>
           {phone && (
-            <a href={tel} className="flex items-center gap-1.5 font-semibold text-green-400 hover:text-green-300 transition-colors">
+            <a href={tel} className="flex items-center gap-1.5 font-semibold text-sky-400 hover:text-sky-300 transition-colors">
               <PhoneIcon className="size-3.5" />
               {phone} (Toll-Free)
             </a>
@@ -52,11 +52,11 @@ export default function Navbar({ tagline, phone }: Props) {
         {/* Logo */}
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <span className="flex items-center justify-center size-9 rounded-lg bg-indigo-600">
+            <span className="flex items-center justify-center size-9 rounded-lg bg-blue-800">
               <PlaneTakeoff className="size-5 text-white" />
             </span>
             <span className="text-lg font-bold text-gray-900">
-              Airline<span className="text-indigo-600">Office</span>Directory
+              Airline<span className="text-blue-800">Office</span>Directory
             </span>
           </Link>
         </div>
@@ -82,8 +82,8 @@ export default function Navbar({ tagline, phone }: Props) {
               aria-current={isActive(item.href) ? 'page' : undefined}
               className={`text-sm font-semibold transition-colors ${
                 isActive(item.href)
-                  ? 'text-indigo-600'
-                  : 'text-gray-700 hover:text-indigo-600'
+                  ? 'text-blue-800'
+                  : 'text-gray-700 hover:text-blue-800'
               }`}
             >
               {item.name}
@@ -96,7 +96,7 @@ export default function Navbar({ tagline, phone }: Props) {
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             <a
               href={tel}
-              className="inline-flex items-center gap-2 rounded-full bg-green-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-green-600 transition-colors"
+              className="inline-flex items-center gap-2 rounded-full bg-orange-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-orange-700 transition-colors"
             >
               <PhoneIcon className="size-4" />
               Call Now
@@ -111,11 +111,11 @@ export default function Navbar({ tagline, phone }: Props) {
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
             <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-              <span className="flex items-center justify-center size-9 rounded-lg bg-indigo-600">
+              <span className="flex items-center justify-center size-9 rounded-lg bg-blue-800">
                 <PlaneTakeoff className="size-5 text-white" />
               </span>
               <span className="text-lg font-bold text-gray-900">
-                Airline<span className="text-indigo-600">Office</span>Directory
+                Airline<span className="text-blue-800">Office</span>Directory
               </span>
             </Link>
             <button
@@ -138,7 +138,7 @@ export default function Navbar({ tagline, phone }: Props) {
                     aria-current={isActive(item.href) ? 'page' : undefined}
                     className={`-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold ${
                       isActive(item.href)
-                        ? 'bg-indigo-50 text-indigo-600'
+                        ? 'bg-blue-50 text-blue-800'
                         : 'text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -150,7 +150,7 @@ export default function Navbar({ tagline, phone }: Props) {
                 <div className="py-6">
                   <a
                     href={tel}
-                    className="flex items-center justify-center gap-2 w-full rounded-full bg-green-500 px-4 py-3 text-sm font-bold text-white"
+                    className="flex items-center justify-center gap-2 w-full rounded-full bg-orange-600 px-4 py-3 text-sm font-bold text-white"
                   >
                     <PhoneIcon className="size-4" />
                     Call Now: {phone}
