@@ -42,6 +42,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AirlineHubPage({ params }: Props) {
   const { airlineSlug } = await params
+
+  // Checked before the content lookup, not just on a 404 — an admin-added
+  // redirect must win even while the airline it points away from is still live.
+  const target = await getRedirectTarget(`/${airlineSlug}`)
+  if (target) permanentRedirect(target)
+
   const [airlineResult, offices] = await Promise.all([
     getAirline(airlineSlug),
     getOfficesByAirline(airlineSlug),
@@ -49,8 +55,6 @@ export default async function AirlineHubPage({ params }: Props) {
 
   const airline = airlineResult ?? ((await canPreviewDrafts()) ? await getAirlineForPreview(airlineSlug) : null)
   if (!airline) {
-    const target = await getRedirectTarget(`/${airlineSlug}`)
-    if (target) permanentRedirect(target)
     notFound()
   }
 

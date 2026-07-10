@@ -64,6 +64,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function OfficePage({ params }: Props) {
   const { airlineSlug, officeSlug } = await params
 
+  // Checked before the content lookup, not just on a 404 — an admin-added
+  // redirect (e.g. consolidating a duplicate office) must win even while the
+  // office it points away from still exists and is otherwise live.
+  const target = await getRedirectTarget(`/${airlineSlug}/${officeSlug}`)
+  if (target) permanentRedirect(target)
+
   const [officeResult, siblingOffices] = await Promise.all([
     getOffice(airlineSlug, officeSlug),
     getOfficesByAirline(airlineSlug),
@@ -75,8 +81,6 @@ export default async function OfficePage({ params }: Props) {
   // would wrongly 404 that exact on-read case.
   const office = officeResult ?? ((await canPreviewDrafts()) ? await getOfficeForPreview(airlineSlug, officeSlug) : null)
   if (!office) {
-    const target = await getRedirectTarget(`/${airlineSlug}/${officeSlug}`)
-    if (target) permanentRedirect(target)
     notFound()
   }
 

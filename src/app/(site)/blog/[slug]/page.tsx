@@ -49,6 +49,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
 
+  // Checked before the content lookup, not just on a 404 — an admin-added
+  // redirect must win even while the post it points away from is still live.
+  const target = await getRedirectTarget(`/blog/${slug}`)
+  if (target) permanentRedirect(target)
+
   const [postResult, sidebarData] = await Promise.all([
     getBlogPost(slug),
     getSidebarData(),
@@ -56,8 +61,6 @@ export default async function BlogPostPage({ params }: Props) {
 
   const post = postResult ?? ((await canPreviewDrafts()) ? await getBlogPostForPreview(slug) : null)
   if (!post) {
-    const target = await getRedirectTarget(`/blog/${slug}`)
-    if (target) permanentRedirect(target)
     notFound()
   }
 
